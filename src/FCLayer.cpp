@@ -25,12 +25,12 @@ void FCLayer::initialize()
 	size_t decimation = 10000;
 	size_t size = weights.size();
 
-	float temp[size];
+	float temp = 0;
 	for (size_t i = 0; i < size; ++i){
-		temp[i] = (float)(rand() % (higher - lower) + lower)/decimation;
+		temp = (float)(rand() % (higher - lower) + lower)/decimation;
 		
 		if (partyNum == PARTY_A){
-			weights[i].first = floatToMyType(temp[i]);
+			weights[i].first = floatToMyType(temp);
 			weights[i].second = 0;
 		}
 		
@@ -41,7 +41,7 @@ void FCLayer::initialize()
 		
 		if (partyNum == PARTY_C){
 			weights[i].first = 0;
-			weights[i].second = floatToMyType(temp[i]);
+			weights[i].second = floatToMyType(temp);
 		}
 	}
 		

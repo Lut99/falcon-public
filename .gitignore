@@ -1,1 +1,9 @@
+# Ignore mac stuff
 .DS_Store
+
+# Ignore C(++) compiled objects / binaries
+*.o
+*.out
+
+# Ignore notebook checkpoints
+*/.ipynb_checkpoints
