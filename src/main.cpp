@@ -20,7 +20,6 @@ int main(int argc, char** argv)
 {
 /****************************** PREPROCESSING ******************************/ 
 	parseInputs(argc, argv);
-	NeuralNetConfig* config = new NeuralNetConfig(NUM_ITERATIONS);
 	string network, dataset, security;
 	bool PRELOADING = false;
 
@@ -36,9 +35,18 @@ int main(int argc, char** argv)
 		dataset = "MNIST";
 		security = "Semi-honest";
 	}
-	selectNetwork(network, dataset, security, config);
-	config->checkNetwork();
-	NeuralNetwork* net = new NeuralNetwork(config);
+
+	// Create the network
+	NeuralNetwork* net;
+	{
+		// Populate the config
+		NeuralNetConfig config(NUM_ITERATIONS);
+		selectNetwork(network, dataset, security, &config);
+		config.checkNetwork();
+
+		// Create it
+		net = new NeuralNetwork(&config);
+	}
 
 /****************************** AES SETUP and SYNC ******************************/ 
 	aes_indep = new AESObject(argv[3]);
@@ -90,7 +98,6 @@ int main(int argc, char** argv)
 	delete aes_indep;
 	delete aes_next;
 	delete aes_prev;
-	delete config;
 	delete net;
 	deleteObjects();
 

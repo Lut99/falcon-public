@@ -7,6 +7,7 @@ class Layer
 public: 
 	int layerNum = 0;
 	Layer(int _layerNum): layerNum(_layerNum) {};
+	virtual ~Layer() {};
 
 //Virtual functions	
 	virtual void printLayer() {};

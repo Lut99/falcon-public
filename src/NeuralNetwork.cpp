@@ -49,8 +49,9 @@ NeuralNetwork::NeuralNetwork(NeuralNetConfig* config)
 
 NeuralNetwork::~NeuralNetwork()
 {
-	for (vector<Layer*>::iterator it = layers.begin() ; it != layers.end(); ++it)
+	for (vector<Layer*>::iterator it = layers.begin() ; it != layers.end(); ++it) {
 		delete (*it);
+	}
 
 	layers.clear();
 }

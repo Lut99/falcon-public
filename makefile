@@ -1,5 +1,17 @@
 # Run make to see list of commands.
 
+
+############################# Makefile arguments ######################################
+
+ifndef EXE
+ifdef DEBUGGER
+EXE := $(DEBUGGER) ./Falcon.out
+else
+EXE := ./Falcon.out
+endif
+endif
+
+
 ########################## Executable (Falcon.out) arguments ##########################
 # arg[0]: Falcon.out
 # arg[1]: Party number (0,1,2)
@@ -63,40 +75,39 @@ clean: ## Run this to clean all files
 
 ################################# Remote runs ##########################################
 terminal: Falcon.out ## Run this to print the output of (only) Party 0 to terminal
-	./Falcon.out 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
-	./Falcon.out 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
-	./Falcon.out 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
+	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
+	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
+	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
 	@echo "Execution completed"
 
 file: Falcon.out ## Run this to append the output of (only) Party 0 to file output/3PC.txt
 	mkdir -p output
-	./Falcon.out 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
-	./Falcon.out 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
-	./Falcon.out 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC >>output/3PC.txt
+	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
+	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
+	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC >>output/3PC.txt
 	@echo "Execution completed"
 
 valg: Falcon.out ## Run this to execute (only) Party 0 using valgrind. Change FLAGS to -O0.
-	./Falcon.out 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
-	./Falcon.out 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
+	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
+	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
 	valgrind --tool=memcheck --leak-check=full --track-origins=yes --dsymutil=yes ./Falcon.out 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC
 
 command: Falcon.out ## Run this to use the run parameters specified in the makefile. 
-	./Falcon.out 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
-	./Falcon.out 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
-	./Falcon.out 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC $(NETWORK) $(DATASET) $(SECURITY) 
+	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
+	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
+	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC $(NETWORK) $(DATASET) $(SECURITY) 
 	@echo "Execution completed"
 
 
 ################################## tmux runs ############################################
 zero: Falcon.out ## Run this to only execute Party 0 (useful for multiple terminal runs)
-	./Falcon.out 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
+	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
 
 one: Falcon.out ## Run this to only execute Party 1 (useful for multiple terminal runs)
-	./Falcon.out 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB
+	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB
 
 two: Falcon.out ## Run this to only execute Party 2 (useful for multiple terminal runs)
-	./Falcon.out 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC
+	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC
 #########################################################################################
 
 .PHONY: help
-
