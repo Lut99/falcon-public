@@ -42,6 +42,13 @@ string SECURITY_TYPE;
 extern void print_linear(myType var, string type);
 extern void funcReconstruct(const RSSVectorMyType &a, vector<myType> &b, size_t size, string str, bool print);
 
+
+/***** HELPER MACROS *****/
+// Opens the file with an associated error check.
+#define OPEN_FILE(NUM, NAME, PATH) \
+	ifstream NAME(PATH); if (!NAME.is_open()) { cerr << NUM << ": Failed to load dataset '" << PATH << "': " << strerror(errno) << endl; }
+
+
 /******************* Main train and test functions *******************/
 void parseInputs(int argc, char* argv[])
 {	
@@ -830,8 +837,10 @@ void loadData(string net, string dataset)
 	string filename_test_labels_next, filename_test_labels_prev;
 	
 	// modified to let each party holding a share of data
+	char* party_num = NULL;
 	if (partyNum == PARTY_A)
 	{
+		party_num = "A";
 		filename_train_data_next = "files/train_data_A";
 		filename_train_data_prev = "files/train_data_B";
 		filename_test_data_next = "files/test_data_A";
@@ -840,10 +849,9 @@ void loadData(string net, string dataset)
 		filename_train_labels_prev = "files/train_labels_B";
 		filename_test_labels_next = "files/test_labels_A";
 		filename_test_labels_prev = "files/test_labels_B";
-	}
-
-	if (partyNum == PARTY_B)
+	} else if (partyNum == PARTY_B)
 	{
+		party_num = "B";
 		filename_train_data_next = "files/train_data_B";
 		filename_train_data_prev = "files/train_data_C";
 		filename_test_data_next = "files/test_data_B";
@@ -852,10 +860,9 @@ void loadData(string net, string dataset)
 		filename_train_labels_prev = "files/train_labels_C";
 		filename_test_labels_next = "files/test_labels_B";
 		filename_test_labels_prev = "files/test_labels_C";
-	}
-
-	if (partyNum == PARTY_C)
+	} else if (partyNum == PARTY_C)
 	{
+		party_num = "C";
 		filename_train_data_next = "files/train_data_C";
 		filename_train_data_prev = "files/train_data_A";
 		filename_test_data_next = "files/test_data_C";
@@ -864,11 +871,13 @@ void loadData(string net, string dataset)
 		filename_train_labels_prev = "files/train_labels_A";
 		filename_test_labels_next = "files/test_labels_C";
 		filename_test_labels_prev = "files/test_labels_A";
-	}	
+	} else {
+		party_num = "<unknown party>";
+	}
 
 	float temp_next = 0, temp_prev = 0;
-	ifstream f_next(filename_train_data_next);
-	ifstream f_prev(filename_train_data_prev);
+	OPEN_FILE(party_num, f_next, filename_train_data_next);
+	OPEN_FILE(party_num, f_prev, filename_train_data_prev);
 	for (int i = 0; i < TRAINING_DATA_SIZE * INPUT_SIZE; ++i)
 	{
 		f_next >> temp_next; f_prev >> temp_prev;
@@ -876,8 +885,8 @@ void loadData(string net, string dataset)
 	}
 	f_next.close(); f_prev.close();
 
-	ifstream g_next(filename_train_labels_next);
-	ifstream g_prev(filename_train_labels_prev);
+	OPEN_FILE(party_num, g_next, filename_train_labels_next);
+	OPEN_FILE(party_num, g_prev, filename_train_labels_prev);
 	for (int i = 0; i < TRAINING_DATA_SIZE * LAST_LAYER_SIZE; ++i)
 	{
 		g_next >> temp_next; g_prev >> temp_prev;
@@ -885,8 +894,8 @@ void loadData(string net, string dataset)
 	}
 	g_next.close(); g_prev.close();
 
-	ifstream h_next(filename_test_data_next);
-	ifstream h_prev(filename_test_data_prev);
+	OPEN_FILE(party_num, h_next, filename_test_data_next);
+	OPEN_FILE(party_num, h_prev, filename_test_data_prev);
 	for (int i = 0; i < TEST_DATA_SIZE * INPUT_SIZE; ++i)
 	{
 		h_next >> temp_next; h_prev >> temp_prev;
@@ -894,8 +903,8 @@ void loadData(string net, string dataset)
 	}
 	h_next.close(); h_prev.close();
 
-	ifstream k_next(filename_test_labels_next);
-	ifstream k_prev(filename_test_labels_prev);
+	OPEN_FILE(party_num, k_next, filename_test_labels_next);
+	OPEN_FILE(party_num, k_prev, filename_test_labels_prev);
 	for (int i = 0; i < TEST_DATA_SIZE * LAST_LAYER_SIZE; ++i)
 	{
 		k_next >> temp_next; k_prev >> temp_prev;
