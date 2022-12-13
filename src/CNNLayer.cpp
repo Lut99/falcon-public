@@ -64,14 +64,17 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 	size_t ow 	= (((iw-f+2*P)/S)+1);
 	size_t oh	= (((ih-f+2*P)/S)+1);
 
-	//Reshape activations
+	// Switch between modes
+	//Reshape activations - get the input matrix and place it in a larger matrix that has space for the overflowing convolutions
+	cerr << "temp1 size: " << ((iw+2*P)*(ih+2*P)*Din*B * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp1((iw+2*P)*(ih+2*P)*Din*B, make_pair(0,0));
 	// if (FUNCTION_TIME)
 	// 	cout << "ZP: \t" << funcTime(zeroPad, inputActivation, temp1, iw, ih, P, Din, B) << endl;
 	// else
 		zeroPad(inputActivation, temp1, iw, ih, P, Din, B);
 
-	//Reshape for convolution
+	//Reshape for convolution - this is the output, which defines a grid that has to result of each convolution
+	cerr << "temp2 size: " << ((f*f*Din) * (ow*oh*B) * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp2((f*f*Din) * (ow*oh*B));
 	// if (FUNCTION_TIME)
 	// 	cout << "convToMult: " << funcTime(convToMult, temp1, temp2, (iw+2*P), (ih+2*P), f, Din, S, B) << endl;
@@ -96,11 +99,15 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 	}
 
 
-	//Perform the multiplication.
+	//Perform the multiplication of the weights
+	cerr << "temp3 size: " << (Dout * (ow*oh*B) * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp3(Dout * (ow*oh*B));
 	if (FUNCTION_TIME)
+		// Pay no mind to the funcTime; it's the same as funcMatMul(...) (except that it effectively wraps that function)
+		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, weights, temp2, temp3, Dout, (f*f*Din), (ow*oh*B), 0, 0, FLOAT_PRECISION) << endl;
 	else
+		// See `Functionalities.cpp`
 		funcMatMul(weights, temp2, temp3, Dout, (f*f*Din), (ow*oh*B), 0, 0, FLOAT_PRECISION);
 
 
@@ -186,8 +193,10 @@ void CNNLayer::computeDelta(RSSVectorMyType& prevDelta)
 	RSSVectorMyType temp3((Din) * (iw*ih*B), make_pair(0,0));
 
 	if (FUNCTION_TIME)
+		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, temp2, temp1, temp3, Din, (f*f*Dout), (iw*ih*B), 0, 0, FLOAT_PRECISION) << endl;
 	else
+		// See `Functionalities.cpp`
 		funcMatMul(temp2, temp1, temp3, Din, (f*f*Dout), (iw*ih*B), 0, 0, FLOAT_PRECISION);
 
 	{
@@ -290,8 +299,10 @@ void CNNLayer::updateEquations(const RSSVectorMyType& prevActivations)
 	//Compute product, truncate and subtract
 	RSSVectorMyType temp4((Dout) * (f*f*Din));
 	if (FUNCTION_TIME)
+		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!
 		cout << "funcMatMul: " << funcTime(funcMatMul, temp2, temp3, temp4, (Dout), (ow*oh*B), (f*f*Din), 0, 1, FLOAT_PRECISION + LOG_MINI_BATCH + LOG_LEARNING_RATE) << endl;
 	else
+		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!
 		funcMatMul(temp2, temp3, temp4, (Dout), (ow*oh*B), (f*f*Din), 0, 1, 
 					FLOAT_PRECISION + LOG_MINI_BATCH + LOG_LEARNING_RATE);
 	

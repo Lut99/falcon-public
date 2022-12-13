@@ -67,8 +67,10 @@ void FCLayer::forward(const RSSVectorMyType &inputActivation)
 	size_t size = rows*columns;
 
 	if (FUNCTION_TIME)
+		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, inputActivation, weights, activations, rows, common_dim, columns, 0, 0, FLOAT_PRECISION) << endl;
 	else
+		// See `Functionalities.cpp`
 		funcMatMul(inputActivation, weights, activations, rows, common_dim, columns, 0, 0, FLOAT_PRECISION);
 
 	for(size_t r = 0; r < rows; ++r)
@@ -87,8 +89,10 @@ void FCLayer::computeDelta(RSSVectorMyType& prevDelta)
 	size_t common_dim = conf.outputDim;
 	
 	if (FUNCTION_TIME)
+		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, deltas, weights, prevDelta, rows, common_dim, columns, 0, 1, FLOAT_PRECISION) << endl;
 	else
+		// See `Functionalities.cpp`
 		funcMatMul(deltas, weights, prevDelta, rows, common_dim, columns, 0, 1, FLOAT_PRECISION);
 }
 
@@ -119,8 +123,10 @@ void FCLayer::updateEquations(const RSSVectorMyType& prevActivations)
 	RSSVectorMyType deltaWeight(size);
 
 	if (FUNCTION_TIME)
+		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!
 		cout << "funcMatMul: " << funcTime(funcMatMul, prevActivations, deltas, deltaWeight, rows, common_dim, columns, 1, 0, FLOAT_PRECISION + LOG_LEARNING_RATE + LOG_MINI_BATCH) << endl;
 	else
+		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!
 		funcMatMul(prevActivations, deltas, deltaWeight, rows, common_dim, columns, 1, 0, 
 					FLOAT_PRECISION + LOG_LEARNING_RATE + LOG_MINI_BATCH);
 	

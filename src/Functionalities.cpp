@@ -674,6 +674,7 @@ void funcReconstruct3out3(const vector<myType> &a, vector<myType> &b, size_t siz
 // Matrix Multiplication of a*b = c with transpose flags for a,b.
 // Output is a share between PARTY_A and PARTY_B.
 // a^transpose_a is rows*common_dim and b^transpose_b is common_dim*columns
+// NOTE: truncation is FLOAT_PRECISION
 void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyType &c, 
 					size_t rows, size_t common_dim, size_t columns,
 				 	size_t transpose_a, size_t transpose_b, size_t truncation)
@@ -693,6 +694,7 @@ void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyT
 	matrixMultRSS(a, b, temp3, rows, common_dim, columns, transpose_a, transpose_b);
 
 	RSSVectorMyType r(final_size), rPrime(final_size);
+	// Again, unless my eyes are deceiving me, the (1<<truncation) is unused by this function
 	PrecomputeObject.getDividedShares(r, rPrime, (1<<truncation), final_size);
 	for (int i = 0; i < final_size; ++i)
 		temp3[i] = temp3[i] - rPrime[i].first;
@@ -700,6 +702,9 @@ void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyT
 	funcReconstruct3out3(temp3, diffReconst, final_size, "Mat-Mul diff reconst", false);
 	if (SECURITY_TYPE.compare("Malicious") == 0)
 		funcCheckMaliciousMatMul(a, b, c, temp3, rows, common_dim, columns, transpose_a, transpose_b);
+
+	// This effectively implements element-wise diffReconst / (2 ^ truncation) with some casting magic in between to make it a floating-point division
+	// It seems that increasing the FLOAT_PRECISION decreases the size of diffReconst
 	dividePlain(diffReconst, (1 << truncation));
 
 	// for (int i = 0; i < 128; ++i)
@@ -736,6 +741,7 @@ void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyT
 
 
 // Term by term multiplication of 64-bit vectors overriding precision
+// NOTE: precision == FLOAT_PRECISION
 void funcDotProduct(const RSSVectorMyType &a, const RSSVectorMyType &b, 
 						   RSSVectorMyType &c, size_t size, bool truncation, size_t precision) 
 {
@@ -775,6 +781,7 @@ void funcDotProduct(const RSSVectorMyType &a, const RSSVectorMyType &b,
 	{
 		vector<myType> diffReconst(size, 0);
 		RSSVectorMyType r(size), rPrime(size);
+		// Precision appears to be unused in this function, lol
 		PrecomputeObject.getDividedShares(r, rPrime, (1<<precision), size);
 
 		for (int i = 0; i < size; ++i)
@@ -786,6 +793,8 @@ void funcDotProduct(const RSSVectorMyType &a, const RSSVectorMyType &b,
 		}
 
 		funcReconstruct3out3(temp3, diffReconst, size, "Dot-product diff reconst", false);
+		// This effectively implements element-wise diffReconst / (2 ^ precision) with some casting magic in between to make it a floating-point division
+		// It seems that increasing the FLOAT_PRECISION decreases the size of diffReconst
 		dividePlain(diffReconst, (1 << precision));
 		if (partyNum == PARTY_A)
 		{
@@ -1531,6 +1540,7 @@ void funcDivision(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorM
 
 	// RSSVectorMyType scaledA(size);
 	// multiplyByScalar(a, (1 << (alpha + 1)), scaledA);
+	// See this function itself. Dunno exactly why this extra math is here around FLOAT_PRECISION
 	funcDotProduct(answer, a, quotient, size, true, ((2*precision-FLOAT_PRECISION)));	
 }
 

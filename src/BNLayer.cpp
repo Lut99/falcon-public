@@ -32,8 +32,16 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 
 	size_t B = conf.numBatches;
 	size_t m = conf.inputSize;
+	// You can read a bitshift to the left on a 1 the same as two-to-the-power-of; since
+	//   1 << 3 = 0b00000001 << 3 = 0b00001000 = 8 = 2^3
+	// But then hyper efficient.
+	// So this line is basically:
+	//   EPSILON = 2 ^ (FLOAT_PRECISION - 8)
+	// Dunno what EPSILON does, though
 	size_t EPSILON = (myType)(1 << (FLOAT_PRECISION - 8));
 	// TODO: Accept initialization from the paper
+	// INITIAL_GUESS = 2 ^ FLOAT_PRECISION
+	// (See 'EPISOLON')
 	size_t INITIAL_GUESS = (myType)(1 << (FLOAT_PRECISION));
 	size_t SQRT_ROUNDS = 4;
 
@@ -55,6 +63,7 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 
 	//Compute (x-mean)^2
 	RSSVectorMyType temp2(B*m), temp3(B, make_pair(0,0));
+	// See `Functionalities.cpp`
 	funcDotProduct(temp1, temp1, temp2, B*m, true, FLOAT_PRECISION); 
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)
@@ -83,6 +92,7 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 		for (int j = 0; j < m; ++j)
 			g_repeat[i*m+j] = gamma[i];
 
+	// See `Functionalities.cpp`
 	funcDotProduct(g_repeat, xhat, activations, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)
@@ -104,6 +114,7 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 		for (int j = 0; j < m; ++j)
 			g_repeat[i*m+j] = gamma[i];
 
+	// See `Functionalities.cpp`
 	funcDotProduct(g_repeat, deltas, dxhat, B*m, true, FLOAT_PRECISION);
 
 	//First term
@@ -124,6 +135,7 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 
 	//Third term
 	RSSVectorMyType temp3(B*m, make_pair(0,0));
+	// See `Functionalities.cpp`
 	funcDotProduct(dxhat, xhat, temp3, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 1; j < m; ++j)
@@ -133,6 +145,7 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 		for (int j = 0; j < m; ++j)
 			temp3[i*m + j] = temp3[i*m];
 
+	// See `Functionalities.cpp`
 	funcDotProduct(temp3, xhat, temp3, B*m, true, FLOAT_PRECISION);
 
 	//Numerator
@@ -164,6 +177,7 @@ void BNLayer::updateEquations(const RSSVectorMyType& prevActivations)
 
 	//Update gamma
 	RSSVectorMyType temp2(B*m, make_pair(0,0)), temp3(B, make_pair(0,0));
+	// See `Functionalities.cpp`
 	funcDotProduct(xhat, deltas, temp2, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)

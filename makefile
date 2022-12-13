@@ -11,6 +11,13 @@ EXE := ./Falcon.out
 endif
 endif
 
+# If LESS_MEMORY is given, enables optimisations that decrease memory usage
+ifdef LESS_MEMORY
+LESS_MEMORY := -D LESS_MEMORY
+else
+LESS_MEMORY := 
+endif
+
 
 ########################## Executable (Falcon.out) arguments ##########################
 # arg[0]: Falcon.out
@@ -33,9 +40,9 @@ OPEN_SSL_LOC := /data/swagh/conda
 # RUN_TYPE {localhost, LAN or WAN} 
 RUN_TYPE := localhost
 # NETWORK {SecureML, Sarda, MiniONN, LeNet, AlexNet, and VGG16}
-NETWORK := AlexNet # MiniONN
+NETWORK := VGG16 # MiniONN
 # Dataset {MNIST, CIFAR10, and ImageNet}
-DATASET	:= ImageNet # MNIST
+DATASET	:= CIFAR10 # MNIST
 # Security {Semi-honest or Malicious} 
 SECURITY:= Semi-honest
 #########################################################################################
@@ -52,7 +59,7 @@ OBJ_FILES    	  += $(patsubst util/%.cpp, util/%.o,$(OBJ_CPP_FILES))
 HEADER_FILES       = $(wildcard src/*.h)
 
 # FLAGS := -static -g -O0 -w -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpermissive -fpic
-FLAGS := -O3 -w -g -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic
+FLAGS := -O3 -w -g -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(LESS_MEMORY)
 LIBS := -lcrypto -lssl
 OBJ_INCLUDES := -I 'lib_eigen/' -I 'util/Miracl/' -I 'util/' -I '$(OPEN_SSL_LOC)/include/'
 BMR_INCLUDES := -L./ -L$(OPEN_SSL_LOC)/lib/ $(OBJ_INCLUDES) 
