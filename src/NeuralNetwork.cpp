@@ -1,6 +1,7 @@
 
 #pragma once
 #include "tools.h"
+#include "secondary.h"
 #include "FCLayer.h"
 #include "CNNLayer.h"
 #include "MaxpoolLayer.h"
@@ -14,6 +15,10 @@ extern size_t INPUT_SIZE;
 extern size_t LAST_LAYER_SIZE;
 extern bool WITH_NORMALIZATION;
 extern bool LARGE_NETWORK;
+extern RSSVectorMyType testData, testLabels;
+
+#define N_LENGTH(N) \
+	((N) > 0 ? (size_t) floor(log10((double) (N)) + 1.0) : 1)
 
 NeuralNetwork::NeuralNetwork(NeuralNetConfig* config)
 :inputData(INPUT_SIZE * MINI_BATCH_SIZE),
@@ -63,7 +68,7 @@ void NeuralNetwork::forward()
 	layers[0]->forward(inputData);
 	if (LARGE_NETWORK)
 		cout << "Forward \t" << layers[0]->layerNum << " completed..." << endl;
-	
+
 	// cout << "----------------------------------------------" << endl;
 	// cout << "DEBUG: forward() at NeuralNetwork.cpp" << endl;
 	// print_vector(inputData, "FLOAT", "inputData:", 784);
@@ -215,6 +220,126 @@ void NeuralNetwork::getAccuracy(const RSSVectorMyType &maxIndex, vector<size_t> 
 
 	cout << "Rolling accuracy: " << counter[0] << " out of " 
 		 << counter[1] << " (" << (counter[0]*100/counter[1]) << " %)" << endl;
+}
+
+/* TIM: Function that computes the metrics (accuracy, recall, precision, F1-score) for this neural network.
+ * 
+ * Note that we assume that it has already been trained.
+ * 
+ * # Arguments
+ * - `width`: The width of the input images, in pixels.
+ * - `height`: The height of the input images, in pixels.
+ * - `depth`: The depth of the input image pixels, i.e., how many bytes are needed (1 for grayscale, 3 for RGB).
+ * 
+ * # Returns
+ * Nothing directly, but does print the metrics to `stdout` in a table-like fashion.
+ */
+void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
+	log_print("NN.getMetrics");
+
+	// Truncate the test labels such that the 
+
+	// Set the input data as the test data
+	RSSVectorMyType old_data = this->inputData;
+	// this->inputData = test_data;
+	readMiniBatch(this, "TESTING", testData.size() / (width * height * depth));
+	// printNetwork(this);
+
+	// Do a forward pass to compute the activations
+	this->forward();
+
+	// Reconstruct the prediction of the neural network, using the functions as presented in `NeuralNetwork::getAccuracy()`.
+	size_t rows = testLabels.size() / LAST_LAYER_SIZE;
+	size_t columns = LAST_LAYER_SIZE;
+
+	RSSVectorMyType max(rows);
+	RSSVectorSmallType maxPrime(rows*columns);
+	RSSVectorMyType temp_max(rows), temp_groundTruth(rows);
+	RSSVectorSmallType temp_maxPrime(rows*columns);
+
+	vector<myType> groundTruth(rows*columns);
+	vector<smallType> prediction(rows*columns);
+
+	// // reconstruct ground truth from output data
+	// funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
+	// // print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+	
+	// reconstruct prediction from neural network
+	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
+	funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
+
+	// Sanity check that the prediction is what we're looking for
+	assert(testLabels.size() == prediction.size());
+
+	// Now we can collect the metrics by comparing the results
+	size_t confusion_matrix[4] = { 0, 0, 0, 0 }; // TP FP FN TN
+
+	// Start computing the accuracy and stuff
+	for (size_t i = 0; i < testLabels.size(); i++) {
+		// Populate the confusion matrix accordingly
+		smallType label = (smallType) (testLabels[i].first);
+		smallType pred  = prediction[i];
+		if (label == 1 && pred == 1) { confusion_matrix[0] += 1; } // TP
+		if (label == 0 && pred == 1) { confusion_matrix[1] += 1; } // FP
+		if (label == 1 && pred == 0) { confusion_matrix[2] += 1; } // FN
+		if (label == 0 && pred == 0) { confusion_matrix[3] += 1; } // TN
+	}
+
+	// Compute the metrics from this matrix
+	double accuracy  = ((double) (confusion_matrix[0] + confusion_matrix[3])) / ((double) testLabels.size());
+	double precision = confusion_matrix[0] > 0 ? ((double) confusion_matrix[0]) / ((double) (confusion_matrix[0] + confusion_matrix[1])) : 0;
+	double recall    = confusion_matrix[0] > 0 ? ((double) confusion_matrix[0]) / ((double) (confusion_matrix[0] + confusion_matrix[2])) : 0;
+	double f1        = precision * recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+
+	// Print 'em
+	size_t longest_len = 1;
+	for (size_t i = 0; i < 4; i++) {
+		size_t len = confusion_matrix[i] > 0 ? (size_t) floor(log10((double) confusion_matrix[i]) + 1.0) : 1;
+		if (len > longest_len) {
+			longest_len = len;
+		}
+	}
+	cout << "----------------------------------------------" << endl;
+	cout << "Confusion matrix:" << endl;
+	cout << "      Pred" << endl;
+	cout << "  ┌---┬-" << std::string(longest_len - 1, '-') << "--┬-" << std::string(longest_len - 1, '-') << "--┐" << endl;
+	cout << "  |   | " << std::string(longest_len - 1, ' ') << "1 | " << std::string(longest_len - 1, ' ') << "0 |" << endl;
+	cout << "R ├---┼-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
+	cout << "e | 1 | " << std::string(longest_len - N_LENGTH(confusion_matrix[0]), ' ') << confusion_matrix[0] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[1]), ' ') << confusion_matrix[1] << " |" << endl;
+	cout << "a ├---┼-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
+	cout << "l | 0 | " << std::string(longest_len - N_LENGTH(confusion_matrix[2]), ' ') << confusion_matrix[2] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[3]), ' ') << confusion_matrix[3] << " |" << endl;
+	cout << "  └---┴-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
+	cout << "----------------------------------------------" << endl;
+	cout << "Accuracy  : " << (accuracy * 100.0) << '%' << endl;
+	cout << "Precision : " << precision << endl;
+	cout << "Recall    : " << recall << endl;
+	cout << "F1        : " << f1 << endl;
+	cout << "----------------------------------------------" << endl;
+
+	// Uncomment to see what we're actually comparing!
+	// cout << "Predicted labels:";
+	// for (size_t i = 0; i < prediction.size(); i++) {
+	// 	cout << ' ' << ((int) prediction[i]);
+	// }
+	// cout << endl;
+	// cout << "Actual labels (first):";
+	// for (size_t i = 0; i < testLabels.size(); i++) {
+	// 	cout << ' ' << ((int) testLabels[i].first);
+	// }
+	// cout << endl;
+	// cout << "Actual labels (second):";
+	// for (size_t i = 0; i < testLabels.size(); i++) {
+	// 	cout << ' ' << ((int) testLabels[i].second);
+	// }
+	// cout << endl;
+
+	// Finally, restore the old data
+	this->inputData = old_data;
+	for (size_t i = 0; i < this->layers.size(); i++) {
+		this->layers[i]->setInputRows(MINI_BATCH_SIZE);
+	}
+
+	// Done
 }
 
 // original implmentation of NeuralNetwork::getAccuracy(.)

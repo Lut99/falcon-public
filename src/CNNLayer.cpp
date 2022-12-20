@@ -66,7 +66,6 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 
 	// Switch between modes
 	//Reshape activations - get the input matrix and place it in a larger matrix that has space for the overflowing convolutions
-	cerr << "temp1 size: " << ((iw+2*P)*(ih+2*P)*Din*B * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp1((iw+2*P)*(ih+2*P)*Din*B, make_pair(0,0));
 	// if (FUNCTION_TIME)
 	// 	cout << "ZP: \t" << funcTime(zeroPad, inputActivation, temp1, iw, ih, P, Din, B) << endl;
@@ -74,7 +73,6 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 		zeroPad(inputActivation, temp1, iw, ih, P, Din, B);
 
 	//Reshape for convolution - this is the output, which defines a grid that has to result of each convolution
-	cerr << "temp2 size: " << ((f*f*Din) * (ow*oh*B) * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp2((f*f*Din) * (ow*oh*B));
 	// if (FUNCTION_TIME)
 	// 	cout << "convToMult: " << funcTime(convToMult, temp1, temp2, (iw+2*P), (ih+2*P), f, Din, S, B) << endl;
@@ -100,7 +98,6 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 
 
 	//Perform the multiplication of the weights
-	cerr << "temp3 size: " << (Dout * (ow*oh*B) * sizeof make_pair<myType, myType>(0, 0)) << endl;
 	RSSVectorMyType temp3(Dout * (ow*oh*B));
 	if (FUNCTION_TIME)
 		// Pay no mind to the funcTime; it's the same as funcMatMul(...) (except that it effectively wraps that function)

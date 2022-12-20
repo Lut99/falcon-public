@@ -74,7 +74,7 @@ void train(NeuralNetwork* net)
 	{
 		// cout << "----------------------------------" << endl;  
 		// cout << "Iteration " << i << endl;
-		readMiniBatch(net, "TRAINING");
+		readMiniBatch(net, "TRAINING", MINI_BATCH_SIZE);
 		net->forward();
 		net->backward();
 		// cout << "----------------------------------" << endl;  
@@ -95,7 +95,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 	for (int i = 0; i < NUM_ITERATIONS; ++i)
 	{
 		if (!PRELOADING)
-			readMiniBatch(net, "TESTING");
+			readMiniBatch(net, "TESTING", MINI_BATCH_SIZE);
 
 		net->forward();
 		// net->predict(maxIndex);
@@ -916,21 +916,23 @@ void loadData(string net, string dataset)
 }
 
 
-void readMiniBatch(NeuralNetwork* net, string phase)
+void readMiniBatch(NeuralNetwork* net, string phase, size_t batch_size)
 {
 	size_t s = trainData.size();
 	size_t t = trainLabels.size();
 
 	if (phase == "TRAINING")
 	{
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+		net->inputData.resize(INPUT_SIZE * batch_size);
+		for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
 			net->inputData[i] = trainData[(trainDataBatchCounter + i)%s];
 
-		for (int i = 0; i < LAST_LAYER_SIZE * MINI_BATCH_SIZE; ++i)
+		net->outputData.resize(LAST_LAYER_SIZE * batch_size);
+		for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
 			net->outputData[i] = trainLabels[(trainLabelsBatchCounter + i)%t];
 
-		trainDataBatchCounter += INPUT_SIZE * MINI_BATCH_SIZE;
-		trainLabelsBatchCounter += LAST_LAYER_SIZE * MINI_BATCH_SIZE;
+		trainDataBatchCounter += INPUT_SIZE * batch_size;
+		trainLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
 	}
 
 	if (trainDataBatchCounter > s)
@@ -946,14 +948,16 @@ void readMiniBatch(NeuralNetwork* net, string phase)
 
 	if (phase == "TESTING")
 	{
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+		net->inputData.resize(INPUT_SIZE * batch_size);
+		for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
 			net->inputData[i] = testData[(testDataBatchCounter + i)%p];
 
-		for (int i = 0; i < LAST_LAYER_SIZE * MINI_BATCH_SIZE; ++i)
+		net->outputData.resize(LAST_LAYER_SIZE * batch_size);
+		for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
 			net->outputData[i] = testLabels[(testLabelsBatchCounter + i)%q];
 
-		testDataBatchCounter += INPUT_SIZE * MINI_BATCH_SIZE;
-		testLabelsBatchCounter += LAST_LAYER_SIZE * MINI_BATCH_SIZE;
+		testDataBatchCounter += INPUT_SIZE * batch_size;
+		testLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
 	}
 
 	if (testDataBatchCounter > p)
@@ -961,6 +965,12 @@ void readMiniBatch(NeuralNetwork* net, string phase)
 
 	if (testLabelsBatchCounter > q)
 		testLabelsBatchCounter -= q;
+
+
+	// Always update the layers too
+	for (size_t i = 0; i < net->layers.size(); i++) {
+		net->layers[i]->setInputRows(batch_size);
+	}
 }
 
 void printNetwork(NeuralNetwork* net)

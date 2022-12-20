@@ -625,6 +625,7 @@ void zeroPad(const RSSVectorMyType &a, RSSVectorMyType &b,
 				{
 					b[i*size_B + j*size_Din + (k+P)*size_w + l + P]
 						= a[i*Din*iw*ih + j*iw*ih + k*iw + l];
+						// = a.at(i*Din*iw*ih + j*iw*ih + k*iw + l);
 				}
 }
 

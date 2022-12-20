@@ -3,19 +3,27 @@
 
 ############################# Makefile arguments ######################################
 
+# Set the executable to either the executable itself (normal), or to use some kind of "debugger" (e.g., valgrind, heaptrack, ...)
+# Usage: `make <command> MAIN_DEBUGGER=<...>` to only apply it to the "main" executable (i.e., `./Falcon.out 0`)
+#   or : `make <command> DEBUGGER=<...>` to apply it to all Falcon instances.
 ifndef EXE
+# Set the main executable's one
+ifdef MAIN_DEBUGGER
+MAIN_EXE := $(MAIN_DEBUGGER) ./Falcon.out
+else
+ifdef DEBUGGER
+MAIN_EXE := $(DEBUGGER) ./Falcon.out
+else
+MAIN_EXE := ./Falcon.out
+endif
+endif
+
+# Set the rest
 ifdef DEBUGGER
 EXE := $(DEBUGGER) ./Falcon.out
 else
 EXE := ./Falcon.out
 endif
-endif
-
-# If LESS_MEMORY is given, enables optimisations that decrease memory usage
-ifdef LESS_MEMORY
-LESS_MEMORY := -D LESS_MEMORY
-else
-LESS_MEMORY := 
 endif
 
 
@@ -59,7 +67,7 @@ OBJ_FILES    	  += $(patsubst util/%.cpp, util/%.o,$(OBJ_CPP_FILES))
 HEADER_FILES       = $(wildcard src/*.h)
 
 # FLAGS := -static -g -O0 -w -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpermissive -fpic
-FLAGS := -O3 -w -g -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(LESS_MEMORY)
+FLAGS := -O3 -w -g -std=c++14 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(LESS_MEMORY)
 LIBS := -lcrypto -lssl
 OBJ_INCLUDES := -I 'lib_eigen/' -I 'util/Miracl/' -I 'util/' -I '$(OPEN_SSL_LOC)/include/'
 BMR_INCLUDES := -L./ -L$(OPEN_SSL_LOC)/lib/ $(OBJ_INCLUDES) 
@@ -84,14 +92,14 @@ clean: ## Run this to clean all files
 terminal: Falcon.out ## Run this to print the output of (only) Party 0 to terminal
 	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
 	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
-	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
+	$(MAIN_EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
 	@echo "Execution completed"
 
 file: Falcon.out ## Run this to append the output of (only) Party 0 to file output/3PC.txt
 	mkdir -p output
 	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
 	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
-	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC >>output/3PC.txt
+	$(MAIN_EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC >>output/3PC.txt
 	@echo "Execution completed"
 
 valg: Falcon.out ## Run this to execute (only) Party 0 using valgrind. Change FLAGS to -O0.
@@ -102,19 +110,19 @@ valg: Falcon.out ## Run this to execute (only) Party 0 using valgrind. Change FL
 command: Falcon.out ## Run this to use the run parameters specified in the makefile. 
 	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
 	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB $(NETWORK) $(DATASET) $(SECURITY) >/dev/null &
-	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC $(NETWORK) $(DATASET) $(SECURITY) 
+	$(MAIN_EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC $(NETWORK) $(DATASET) $(SECURITY) 
 	@echo "Execution completed"
 
 
 ################################## tmux runs ############################################
 zero: Falcon.out ## Run this to only execute Party 0 (useful for multiple terminal runs)
-	$(EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
+	$(MAIN_EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC 
 
 one: Falcon.out ## Run this to only execute Party 1 (useful for multiple terminal runs)
-	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB
+	$(MAIN_EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB
 
 two: Falcon.out ## Run this to only execute Party 2 (useful for multiple terminal runs)
-	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC
+	$(MAIN_EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC
 #########################################################################################
 
 .PHONY: help

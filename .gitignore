@@ -15,5 +15,6 @@ output/
 files/train*
 files/test*
 
-# Heaptrack stuff
+# Debugger (valgrind, heaptrack) stuff
+vgcore.*
 *.zst

@@ -28,7 +28,15 @@ public:
 	void computeDelta(RSSVectorMyType& prevDelta) override;
 	void updateEquations(const RSSVectorMyType& prevActivations) override;
 
+	//Setters
+	void setInputRows(size_t rows) override {
+		this->conf.batchSize = rows;
+		this->activations    = RSSVectorMyType(this->conf.batchSize * this->conf.inputDim);
+		this->deltas         = RSSVectorMyType(this->conf.batchSize * this->conf.inputDim);
+	};
+
 	//Getters
+	virtual const char* getName() { return "ReLULayer"; };
 	RSSVectorMyType* getActivation() {return &activations;};
 	RSSVectorMyType* getDelta() {return &deltas;};
 };

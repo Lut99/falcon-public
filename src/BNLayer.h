@@ -30,7 +30,15 @@ public:
 	void computeDelta(RSSVectorMyType& prevDelta) override;
 	void updateEquations(const RSSVectorMyType& prevActivations) override;
 
+	//Setters
+	void setInputRows(size_t rows) override {
+		this->conf.numBatches = rows;
+		this->activations     = RSSVectorMyType(this->conf.numBatches * this->conf.inputSize);
+		this->deltas          = RSSVectorMyType(this->conf.numBatches * this->conf.inputSize);
+	};
+
 	//Getters
+	virtual const char* getName() { return "BCLayer"; };
 	RSSVectorMyType* getActivation() {return &activations;};
 	RSSVectorMyType* getDelta() {return &deltas;};
 };

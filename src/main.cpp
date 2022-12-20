@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include "globals.h"
 #include "AESObject.h"
 #include "Precompute.h"
 #include "secondary.h"
@@ -7,7 +8,6 @@
 #include "NeuralNetConfig.h"
 #include "NeuralNetwork.h"
 #include "unitTests.h"
-
 
 int partyNum;
 AESObject* aes_indep;
@@ -93,6 +93,23 @@ int main(int argc, char** argv)
 	cout << "----------------------------------------------" << endl << endl;  
 
 	printNetwork(net);
+
+	// Finally, show the accuracy and junk
+	if (dataset.compare("MNIST") == 0) {
+		// I don't know the actual image sizes, just that the total should be 784...
+		net->collectMetrics(784, 1, 1);
+	} else if (network.compare("AlexNet train") == 0 && dataset.compare("CIFAR10") == 0) {
+		net->collectMetrics(33, 33, 3);
+	} else if (network.compare("AlexNet train") == 0 && dataset.compare("ImageNet") == 0) {
+		net->collectMetrics(56, 56, 3);
+	} else if (network.compare("VGG16 train") == 0 && dataset.compare("CIFAR10") == 0) {
+		net->collectMetrics(32, 32, 3);
+	} else if (network.compare("VGG16 train") == 0 && dataset.compare("ImageNet") == 0) {
+		net->collectMetrics(64, 64, 3);
+	} else {
+		cerr << "Encountered unknown neural network / dataset combination '" << network << "' / '" << dataset << '\'' << endl;
+		return 1;
+	}
 
 /****************************** CLEAN-UP ******************************/ 
 	delete aes_indep;

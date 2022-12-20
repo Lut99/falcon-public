@@ -44,7 +44,7 @@ def main(output_dir, train_N, test_N, width, height, pixel, last_layer):
                     for _ in range(n_samples):
                         # Generate last_layer value
                         for _ in range(last_layer):
-                            h.write(f"{random.random()} ")
+                            h.write(f"{random.randint(0, 1)} ")
             except IOError as e:
                 print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
                 return 1

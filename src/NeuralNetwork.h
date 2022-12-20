@@ -20,4 +20,18 @@ public:
 	void updateEquations();
 	void predict(RSSVectorMyType &maxIndex);
 	void getAccuracy(const RSSVectorMyType &maxIndex, vector<size_t> &counter);
+
+	/* TIM: Function that computes the metrics (accuracy, recall, precision, F1-score) for this neural network.
+	 * 
+	 * Note that we assume that it has already been trained.
+	 * 
+	 * # Arguments
+	 * - `width`: The width of the input images, in pixels.
+	 * - `height`: The height of the input images, in pixels.
+	 * - `depth`: The depth of the input image pixels, i.e., how many bytes are needed (1 for grayscale, 3 for RGB).
+	 * 
+	 * # Returns
+	 * Nothing directly, but does print the metrics to `stdout` in a table-like fashion.
+	 */
+	void collectMetrics(size_t width, size_t height, size_t depth);
 };
