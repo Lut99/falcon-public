@@ -120,6 +120,9 @@ void NeuralNetwork::computeDelta()
 			for (size_t j = 0; j < columns; ++j)
 				rowSum[i*columns + j] = rowSum[i*columns];
 
+		#ifdef MM_TRACE
+		cout << "NeuralNetwork::computeDelta(): calling division *(layers[NUM_LAYERS-1]->getActivation()) / rowSum = quotient (" << size << ')' << endl;
+		#endif
 		funcDivision(*(layers[NUM_LAYERS-1]->getActivation()), rowSum, quotient, size);
 
 		for (size_t i = 0; i < rows; ++i)
@@ -308,7 +311,7 @@ void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
 	cout << "e | 1 | " << std::string(longest_len - N_LENGTH(confusion_matrix[0]), ' ') << confusion_matrix[0] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[1]), ' ') << confusion_matrix[1] << " |" << endl;
 	cout << "a ├---┼-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
 	cout << "l | 0 | " << std::string(longest_len - N_LENGTH(confusion_matrix[2]), ' ') << confusion_matrix[2] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[3]), ' ') << confusion_matrix[3] << " |" << endl;
-	cout << "  └---┴-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
+	cout << "  └---┴-" << std::string(longest_len - 1, '-') << "--┴-" << std::string(longest_len - 1, '-') << "--┘" << endl;
 	cout << "----------------------------------------------" << endl;
 	cout << "Accuracy  : " << (accuracy * 100.0) << '%' << endl;
 	cout << "Precision : " << precision << endl;

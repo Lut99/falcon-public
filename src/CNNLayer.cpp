@@ -99,6 +99,9 @@ void CNNLayer::forward(const RSSVectorMyType& inputActivation)
 
 	//Perform the multiplication of the weights
 	RSSVectorMyType temp3(Dout * (ow*oh*B));
+	#ifdef MM_TRACE
+	cout << "CNNLayer::forward(): calling matrix multiplication weights * temp2 = temp3 (" << Dout << "x" << (f*f*Din) << " * " << (f*f*Din) << "x" << (ow*oh*B) << " = " << Dout << "x" << (ow*oh*B) << ')' << endl;
+	#endif
 	if (FUNCTION_TIME)
 		// Pay no mind to the funcTime; it's the same as funcMatMul(...) (except that it effectively wraps that function)
 		// See `Functionalities.cpp`
@@ -189,6 +192,9 @@ void CNNLayer::computeDelta(RSSVectorMyType& prevDelta)
 
 	RSSVectorMyType temp3((Din) * (iw*ih*B), make_pair(0,0));
 
+	#ifdef MM_TRACE
+	cout << "CNNLayer::computeDelta(): calling matrix multiplication temp2 * temp1 = temp3 (" << Din << "x" << (f*f*Dout) << " * " << (f*f*Dout) << "x" << (iw*ih*B) << " = " << Din << "x" << (iw*ih*B) << ')' << endl;
+	#endif
 	if (FUNCTION_TIME)
 		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, temp2, temp1, temp3, Din, (f*f*Dout), (iw*ih*B), 0, 0, FLOAT_PRECISION) << endl;
@@ -294,6 +300,9 @@ void CNNLayer::updateEquations(const RSSVectorMyType& prevActivations)
 	}
 
 	//Compute product, truncate and subtract
+	#ifdef MM_TRACE
+	cout << "CNNLayer::updateEquations(): calling matrix multiplication temp2 * temp3 = temp4 (" << Dout << "x" << (ow*oh*B) << " * " << (ow*oh*B) << "x" << (f*f*Din) << " = " << Dout << "x" << (f*f*Din) << ')' << endl;
+	#endif
 	RSSVectorMyType temp4((Dout) * (f*f*Din));
 	if (FUNCTION_TIME)
 		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!

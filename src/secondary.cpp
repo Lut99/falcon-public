@@ -1078,10 +1078,55 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 	}
 	else if (network.compare("AlexNet") == 0)
 	{
-		if(dataset.compare("MNIST") == 0)
-			assert(false && "No AlexNet on MNIST");
-		else if (dataset.compare("CIFAR10") == 0)
-		{
+		if(dataset.compare("MNIST") == 0) {
+			NUM_LAYERS = 20;
+			// NUM_LAYERS = 18;		//Without BN
+			WITH_NORMALIZATION = false;
+			CNNConfig* l0 = new CNNConfig(28,28,1,96,11,1,5,MINI_BATCH_SIZE);
+			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
+			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);		
+			BNConfig * l3 = new BNConfig(5*5*96,MINI_BATCH_SIZE);
+
+			CNNConfig* l4 = new CNNConfig(5,5,96,256,5,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l5 = new MaxpoolConfig(3,3,256,3,2,MINI_BATCH_SIZE);
+			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);		
+			BNConfig * l7 = new BNConfig(1*1*256,MINI_BATCH_SIZE);
+
+			CNNConfig* l8 = new CNNConfig(1,1,256,384,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l9 = new ReLUConfig(1*1*384,MINI_BATCH_SIZE);
+			CNNConfig* l10 = new CNNConfig(1,1,384,384,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l11 = new ReLUConfig(1*1*384,MINI_BATCH_SIZE);
+			CNNConfig* l12 = new CNNConfig(1,1,384,256,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l13 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);
+
+			FCConfig* l14 = new FCConfig(1*1*256,MINI_BATCH_SIZE,256);
+			ReLUConfig* l15 = new ReLUConfig(256,MINI_BATCH_SIZE);
+			FCConfig* l16 = new FCConfig(256,MINI_BATCH_SIZE,256);
+			ReLUConfig* l17 = new ReLUConfig(256,MINI_BATCH_SIZE);
+			FCConfig* l18 = new FCConfig(256,MINI_BATCH_SIZE,10);
+			ReLUConfig* l19 = new ReLUConfig(10,MINI_BATCH_SIZE);
+			config->addLayer(l0);
+			config->addLayer(l1);
+			config->addLayer(l2);
+			config->addLayer(l3);
+			config->addLayer(l4);
+			config->addLayer(l5);
+			config->addLayer(l6);
+			config->addLayer(l7);
+			config->addLayer(l8);
+			config->addLayer(l9);
+			config->addLayer(l10);
+			config->addLayer(l11);
+			config->addLayer(l12);
+			config->addLayer(l13);
+			config->addLayer(l14);
+			config->addLayer(l15);
+			config->addLayer(l16);
+			config->addLayer(l17);
+			config->addLayer(l18);
+			config->addLayer(l19);
+
+		} else if (dataset.compare("CIFAR10") == 0) {
 			NUM_LAYERS = 20;
 			// NUM_LAYERS = 18;		//Without BN
 			WITH_NORMALIZATION = false;

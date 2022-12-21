@@ -66,6 +66,9 @@ void FCLayer::forward(const RSSVectorMyType &inputActivation)
 	size_t common_dim = conf.inputDim;
 	size_t size = rows*columns;
 
+	#ifdef MM_TRACE
+	cout << "FCLayer::forward(): calling matrix multiplication inputActivation * weights = activations (" << rows << "x" << common_dim << " * " << common_dim << "x" << columns << " = " << rows << "x" << columns << ')' << endl;
+	#endif
 	if (FUNCTION_TIME)
 		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, inputActivation, weights, activations, rows, common_dim, columns, 0, 0, FLOAT_PRECISION) << endl;
@@ -87,7 +90,10 @@ void FCLayer::computeDelta(RSSVectorMyType& prevDelta)
 	size_t rows = conf.batchSize;
 	size_t columns = conf.inputDim;
 	size_t common_dim = conf.outputDim;
-	
+
+	#ifdef MM_TRACE
+	cout << "FCLayer::computeDelta(): calling matrix multiplication deltas * weights = prevDelta (" << rows << "x" << common_dim << " * " << common_dim << "x" << columns << " = " << rows << "x" << columns << ')' << endl;
+	#endif
 	if (FUNCTION_TIME)
 		// See `Functionalities.cpp`
 		cout << "funcMatMul: " << funcTime(funcMatMul, deltas, weights, prevDelta, rows, common_dim, columns, 0, 1, FLOAT_PRECISION) << endl;
@@ -122,6 +128,9 @@ void FCLayer::updateEquations(const RSSVectorMyType& prevActivations)
 	size = rows*columns;
 	RSSVectorMyType deltaWeight(size);
 
+	#ifdef MM_TRACE
+	cout << "FCLayer::updateEquations(): calling matrix multiplication prevActivations * deltas = deltaWeight (" << rows << "x" << common_dim << " * " << common_dim << "x" << columns << " = " << rows << "x" << columns << ')' << endl;
+	#endif
 	if (FUNCTION_TIME)
 		// See `Functionalities.cpp`, except that `truncation` now becomes a whole lotta bigger!
 		cout << "funcMatMul: " << funcTime(funcMatMul, prevActivations, deltas, deltaWeight, rows, common_dim, columns, 1, 0, FLOAT_PRECISION + LOG_LEARNING_RATE + LOG_MINI_BATCH) << endl;

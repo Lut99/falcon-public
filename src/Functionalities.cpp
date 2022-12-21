@@ -680,8 +680,17 @@ void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyT
 				 	size_t transpose_a, size_t transpose_b, size_t truncation)
 {
 	log_print("funcMatMul");
+	#ifdef MM_TRACE
+	cout << "funcMatMul(): a.size() == rows*common_dim? (" << a.size() << " == " << rows << "x" << common_dim << " == " << (rows*common_dim) << ')' << endl;
+	#endif
 	assert(a.size() == rows*common_dim && "Matrix a incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcMatMul(): b.size() == common_dim*columns? (" << b.size() << " == " << common_dim << "x" << columns << " == " << (common_dim*columns) << ')' << endl;
+	#endif
 	assert(b.size() == common_dim*columns && "Matrix b incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcMatMul(): c.size() == rows*columns? (" << c.size() << " == " << rows << "x" << columns << " == " << (rows*columns) << ')' << endl;
+	#endif
 	assert(c.size() == rows*columns && "Matrix c incorrect for Mat-Mul");
 
 #if (LOG_DEBUG)
@@ -746,8 +755,17 @@ void funcDotProduct(const RSSVectorMyType &a, const RSSVectorMyType &b,
 						   RSSVectorMyType &c, size_t size, bool truncation, size_t precision) 
 {
 	log_print("funcDotProduct");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<MyType>(): a.size() == size? (" << a.size() << " == " << size << ')' << endl;
+	#endif
 	assert(a.size() == size && "Matrix a incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<MyType>(): b.size() == size? (" << b.size() << " == " << size << ')' << endl;
+	#endif
 	assert(b.size() == size && "Matrix b incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<MyType>(): c.size() == size? (" << c.size() << " == " << size << ')' << endl;
+	#endif
 	assert(c.size() == size && "Matrix c incorrect for Mat-Mul");
 
 	vector<myType> temp3(size, 0);
@@ -833,8 +851,17 @@ void funcDotProduct(const RSSVectorSmallType &a, const RSSVectorSmallType &b,
 							 RSSVectorSmallType &c, size_t size) 
 {
 	log_print("funcDotProduct");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<SmallType>(): a.size() == size? (" << a.size() << " == " << size << ')' << endl;
+	#endif
 	assert(a.size() == size && "Matrix a incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<SmallType>(): b.size() == size? (" << b.size() << " == " << size << ')' << endl;
+	#endif
 	assert(b.size() == size && "Matrix b incorrect for Mat-Mul");
+	#ifdef MM_TRACE
+	cout << "funcDotProduct<SmallType>(): c.size() == size? (" << c.size() << " == " << size << ')' << endl;
+	#endif
 	assert(c.size() == size && "Matrix c incorrect for Mat-Mul");
 
 
@@ -1200,6 +1227,9 @@ void funcPrivateCompare(const RSSVectorSmallType &share_m, const vector<myType> 
 		}
 
 		//(-1)^beta * x[i] - r[i]
+		#ifdef MM_TRACE
+		cout << "funcPrivateCompare(): calling dot product diff o twoBetaMinusOne = xMinusR (" << sizeLong << ')' << endl;
+		#endif
 		funcDotProduct(diff, twoBetaMinusOne, xMinusR, sizeLong);
 
 		for (int index2 = 0; index2 < size; ++index2)
@@ -1366,6 +1396,9 @@ void funcSelectShares(const RSSVectorMyType &a, const RSSVectorSmallType &b,
 				m_c[i].second = (myType)1 - m_c[i].second;
 			}
 
+	#ifdef MM_TRACE
+	cout << "funcSelectShares(): calling dot product a o m_c = selected (" << size << ')' << endl;
+	#endif
 	funcDotProduct(a, m_c, selected, size, false, 0);
 }
 
@@ -1467,6 +1500,9 @@ void funcRELU(const RSSVectorMyType &a, RSSVectorSmallType &temp, RSSVectorMyTyp
 
 	// vector<myType> reconst_m_c(size);
 	// funcReconstruct(m_c, reconst_m_c, size, "m_c", true);
+	#ifdef MM_TRACE
+	cout << "funcRELU(): calling dot product a o m_c = b (" << size << ')' << endl;
+	#endif
 	funcDotProduct(a, m_c, b, size, false, 0);
 }
 
@@ -1527,20 +1563,37 @@ void funcDivision(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorM
 
 	multiplyByScalar(b, 2, twoX);
 	subtractVectors<RSSMyType>(twoPointNine, twoX, w0, size);
+	#ifdef MM_TRACE
+	cout << "funcDivision(): calling dot product b o w0 = xw0 (" << size << ')' << endl;
+	#endif
 	funcDotProduct(b, w0, xw0, size, true, precision); 
 	subtractVectors<RSSMyType>(ones, xw0, epsilon0, size);
-	if (PRECISE_DIVISION)
+	if (PRECISE_DIVISION) {
+		#ifdef MM_TRACE
+		cout << "funcDivision(): calling dot product epsilon0 o epsilon0 = epsilon1 (" << size << ')' << endl;
+		#endif
 		funcDotProduct(epsilon0, epsilon0, epsilon1, size, true, precision);
+	}
 	addVectors(ones, epsilon0, termOne, size);
 	if (PRECISE_DIVISION)
 		addVectors(ones, epsilon1, termTwo, size);
+	#ifdef MM_TRACE
+	cout << "funcDivision(): calling dot product w0 o termOne = answer (" << size << ')' << endl;
+	#endif
 	funcDotProduct(w0, termOne, answer, size, true, precision);
-	if (PRECISE_DIVISION)
+	if (PRECISE_DIVISION) {
+		#ifdef MM_TRACE
+		cout << "funcDivision(): calling dot product answer o termTwo = answer (" << size << ')' << endl;
+		#endif
 		funcDotProduct(answer, termTwo, answer, size, true, precision);
+	}
 
 	// RSSVectorMyType scaledA(size);
 	// multiplyByScalar(a, (1 << (alpha + 1)), scaledA);
 	// See this function itself. Dunno exactly why this extra math is here around FLOAT_PRECISION
+	#ifdef MM_TRACE
+	cout << "funcDivision(): calling dot product answer o a = quotient (" << size << ')' << endl;
+	#endif
 	funcDotProduct(answer, a, quotient, size, true, ((2*precision-FLOAT_PRECISION)));	
 }
 
@@ -1572,22 +1625,39 @@ void funcBatchNorm(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVector
 
 	multiplyByScalar(b, 2, twoX);
 	subtractVectors<RSSMyType>(twoPointNine, twoX, w0, B);
+	#ifdef MM_TRACE
+	cout << "funcBatchNorm(): calling dot product b o w0 = xw0 (" << B << ')' << endl;
+	#endif
 	funcDotProduct(b, w0, xw0, B, true, precision); 
 	subtractVectors<RSSMyType>(ones, xw0, epsilon0, B);
-	if (PRECISE_DIVISION)
+	if (PRECISE_DIVISION) {
+		#ifdef MM_TRACE
+		cout << "funcBatchNorm(): calling dot product epsilon0 o epsilon0 = epsilon1 (" << B << ')' << endl;
+		#endif
 		funcDotProduct(epsilon0, epsilon0, epsilon1, B, true, precision);
+	}
 	addVectors(ones, epsilon0, termOne, B);
 	if (PRECISE_DIVISION)
 		addVectors(ones, epsilon1, termTwo, B);
+	#ifdef MM_TRACE
+	cout << "funcBatchNorm(): calling dot product w0 o termOne = answer (" << B << ')' << endl;
+	#endif
 	funcDotProduct(w0, termOne, answer, B, true, precision);
-	if (PRECISE_DIVISION)
+	if (PRECISE_DIVISION) {
+		#ifdef MM_TRACE
+		cout << "funcBatchNorm(): calling dot product answer o termTwo = answer (" << B << ')' << endl;
+		#endif
 		funcDotProduct(answer, termTwo, answer, B, true, precision);
+	}
 
 	RSSVectorMyType scaledA(batchSize*B), b_repeat(batchSize*B);
 	// multiplyByScalar(a, 2, scaledA); //So that a is of precision precision
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < batchSize; ++j)
 			b_repeat[i*batchSize + j] = answer[i];
+	#ifdef MM_TRACE
+	cout << "funcBatchNorm(): calling dot product b_repeat o a = quotient (" << batchSize*B << ')' << endl;
+	#endif
 	funcDotProduct(b_repeat, a, quotient, batchSize*B, true, (2*precision-FLOAT_PRECISION)); //Convert to fixed precision
 }
 
@@ -1699,6 +1769,9 @@ void debugMatMul()
 	funcGetShares(a, data_a);
 	funcGetShares(b, data_b);
 
+	#ifdef MM_TRACE
+	cout << "debugMatMul(): calling matrix multiplication a * b = c (" << rows << "x" << common_dim << " * " << common_dim << "x" << columns << " = " << rows << "x" << columns << ')' << endl;
+	#endif
 	funcMatMul(a, b, c, rows, common_dim, columns, transpose_a, transpose_b, FLOAT_PRECISION);
 
 	print_vector(a, "FLOAT", "a", a.size());	
@@ -1788,6 +1861,9 @@ void debugDotProd()
 					   b(size, make_pair(1,1)), 
 					   c(size);
 
+	#ifdef MM_TRACE
+	cout << "debugDotProd(): calling dot product a o b = c (" << size << ')' << endl;
+	#endif
 	funcDotProduct(a, b, c, size);
 }
 
@@ -1918,6 +1994,9 @@ void debugDivision()
 
 	funcGetShares(a, data_a);
 	funcGetShares(b, data_b);
+	#ifdef MM_TRACE
+	cout << "debugDivision(): calling division a / b = quotient (" << size << ')' << endl;
+	#endif
 	funcDivision(a, b, quotient, size);
 
 #if (!LOG_DEBUG)
@@ -2045,6 +2124,9 @@ void testMatMul(size_t rows, size_t common_dim, size_t columns, size_t iter)
 	RSSVectorMyType c(rows*columns);
 
 	for (int runs = 0; runs < iter; ++runs)
+		#ifdef MM_TRACE
+		cout << "testMatMul(): calling matrix multiplication a * b = c (" << rows << "x" << common_dim << " * " << common_dim << "x" << columns << " = " << rows << "x" << columns << ')' << endl;
+		#endif
 		funcMatMul(a, b, c, rows, common_dim, columns, 0, 0, FLOAT_PRECISION);
 }
 

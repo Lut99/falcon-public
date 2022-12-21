@@ -27,6 +27,14 @@ endif
 endif
 
 
+# If you specify `MM_TRACE=1`, we will debug with prints statements allowing you to identify where a certain matrix multiplication is called from.
+ifdef MM_TRACE
+MATMUL_TRACE := -D MM_TRACE
+else
+MATMUL_TRACE :=
+endif
+
+
 ########################## Executable (Falcon.out) arguments ##########################
 # arg[0]: Falcon.out
 # arg[1]: Party number (0,1,2)
@@ -48,9 +56,13 @@ OPEN_SSL_LOC := /data/swagh/conda
 # RUN_TYPE {localhost, LAN or WAN} 
 RUN_TYPE := localhost
 # NETWORK {SecureML, Sarda, MiniONN, LeNet, AlexNet, and VGG16}
-NETWORK := VGG16 # MiniONN
+ifndef NETWORK
+NETWORK := AlexNet # MiniONN
+endif
 # Dataset {MNIST, CIFAR10, and ImageNet}
+ifndef DATASET
 DATASET	:= CIFAR10 # MNIST
+endif
 # Security {Semi-honest or Malicious} 
 SECURITY:= Semi-honest
 #########################################################################################
@@ -67,7 +79,7 @@ OBJ_FILES    	  += $(patsubst util/%.cpp, util/%.o,$(OBJ_CPP_FILES))
 HEADER_FILES       = $(wildcard src/*.h)
 
 # FLAGS := -static -g -O0 -w -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpermissive -fpic
-FLAGS := -O3 -w -g -std=c++14 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(LESS_MEMORY)
+FLAGS := -O3 -w -g -std=c++14 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(MATMUL_TRACE)
 LIBS := -lcrypto -lssl
 OBJ_INCLUDES := -I 'lib_eigen/' -I 'util/Miracl/' -I 'util/' -I '$(OPEN_SSL_LOC)/include/'
 BMR_INCLUDES := -L./ -L$(OPEN_SSL_LOC)/lib/ $(OBJ_INCLUDES) 

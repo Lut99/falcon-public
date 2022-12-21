@@ -33,6 +33,10 @@ public:
 	//Setters
 	void setInputRows(size_t rows) override {
 		this->conf.numBatches = rows;
+ 		this->gamma           = RSSVectorMyType(this->conf.numBatches),
+ 		this->beta            = RSSVectorMyType(this->conf.numBatches),
+ 		this->xhat            = RSSVectorMyType(this->conf.numBatches * this->conf.inputSize),
+ 		this->sigma           = RSSVectorMyType(this->conf.numBatches),
 		this->activations     = RSSVectorMyType(this->conf.numBatches * this->conf.inputSize);
 		this->deltas          = RSSVectorMyType(this->conf.numBatches * this->conf.inputSize);
 	};

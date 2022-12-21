@@ -75,6 +75,10 @@
         "valarray": "cpp",
         "variant": "cpp",
         "dense_hash_map": "cpp",
-        "sparse_hash_map": "cpp"
+        "sparse_hash_map": "cpp",
+        "*.expression": "cpp",
+        "alignedvector3": "cpp",
+        "fft": "cpp",
+        "sparsetable": "cpp"
     }
 }

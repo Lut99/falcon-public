@@ -64,6 +64,9 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 	//Compute (x-mean)^2
 	RSSVectorMyType temp2(B*m), temp3(B, make_pair(0,0));
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::forward(): calling dot product temp1 o temp1 = temp2 (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(temp1, temp1, temp2, B*m, true, FLOAT_PRECISION); 
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)
@@ -78,6 +81,9 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 	funcGetShares(sigma, initG);
 	for (int i = 0; i < SQRT_ROUNDS; ++i)
 	{
+		#ifdef MM_TRACE
+		cout << "BNLayer::forward(): calling division temp3 / sigma = b (" << B << ')' << endl;
+		#endif
 		funcDivision(temp3, sigma, b, B);
 		addVectors<RSSMyType>(sigma, b, sigma, B);
 		funcTruncatePublic(sigma, 2, B);
@@ -93,6 +99,9 @@ void BNLayer::forward(const RSSVectorMyType& inputActivation)
 			g_repeat[i*m+j] = gamma[i];
 
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::forward(): calling dot product g_repeat o xhat = activations (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(g_repeat, xhat, activations, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)
@@ -115,6 +124,9 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 			g_repeat[i*m+j] = gamma[i];
 
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::computeDelta(): calling dot product g_repeat o deltas = dxhat (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(g_repeat, deltas, dxhat, B*m, true, FLOAT_PRECISION);
 
 	//First term
@@ -136,6 +148,9 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 	//Third term
 	RSSVectorMyType temp3(B*m, make_pair(0,0));
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::computeDelta(): calling dot product dxhat o xhat = temp3 (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(dxhat, xhat, temp3, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 1; j < m; ++j)
@@ -146,6 +161,9 @@ void BNLayer::computeDelta(RSSVectorMyType& prevDelta)
 			temp3[i*m + j] = temp3[i*m];
 
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::computeDelta(): calling dot product temp3 o xhat = temp3 (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(temp3, xhat, temp3, B*m, true, FLOAT_PRECISION);
 
 	//Numerator
@@ -178,6 +196,9 @@ void BNLayer::updateEquations(const RSSVectorMyType& prevActivations)
 	//Update gamma
 	RSSVectorMyType temp2(B*m, make_pair(0,0)), temp3(B, make_pair(0,0));
 	// See `Functionalities.cpp`
+	#ifdef MM_TRACE
+	cout << "BNLayer::computeDelta(): calling dot product xhat o deltas = temp2 (" << B*m << ')' << endl;
+	#endif
 	funcDotProduct(xhat, deltas, temp2, B*m, true, FLOAT_PRECISION);
 	for (int i = 0; i < B; ++i)
 		for (int j = 0; j < m; ++j)
