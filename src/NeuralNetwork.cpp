@@ -17,9 +17,95 @@ extern bool WITH_NORMALIZATION;
 extern bool LARGE_NETWORK;
 extern RSSVectorMyType testData, testLabels;
 
+
+/***** HELPER MACROS *****/
 #define N_LENGTH(N) \
 	((N) > 0 ? (size_t) floor(log10((double) (N)) + 1.0) : 1)
 
+
+
+
+
+/***** HELPER FUNCTIONS *****/
+/* Prints the header of the confusion matrix.
+ * 
+ * # Arguments
+ * - `largest_cell_size`: The size (in number of digits) of the largest value in any of the cells.
+ * 
+ * # Returns
+ * Nothing, but does write it to stdout with proper formatting.
+ */
+void print_confusion_matrix_header(size_t largest_cell_size) {
+	// Print the empty cell
+	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
+	cout << " | " << std::string(largest_class_size, ' ');
+
+	// Next, print all of the classes
+	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
+		cout << " | " << std::string(largest_cell_size - N_LENGTH(i), ' ') << i;
+	}
+
+	// End the line
+	cout << " |" << endl;
+}
+
+/* Prints a single row of the confusion matrix.
+ * 
+ * We assume that the matrix is LAST_LAYER_SIZE * LAST_LAYER_SIZE, implying that the given array contains at least LAST_LAYER_SIZE elements (since it's a single row).
+ * 
+ * # Arguments
+ * - `confusion_row`: A point to a row of at least LAST_LAYER_SIZE elements.
+ * - `class_number`: The class that is represented at this row (vertically).
+ * - `largest_cell_size`: The size (in number of digits) of the largest value in any of the cells.
+ * 
+ * # Returns
+ * Nothing, but does write it to stdout with proper formatting.
+ */
+void print_confusion_matrix_row(int* confusion_row, int class_number, size_t largest_cell_size) {
+	// Print the class first
+	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
+	cout << " | " << std::string(largest_class_size - N_LENGTH(class_number), ' ') << class_number;
+
+	// Next, print all of the cells
+	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
+		int clss = confusion_row[i];
+		cout << " | " << std::string(largest_cell_size - N_LENGTH(clss), ' ') << clss;
+	}
+
+	// End the line
+	cout << " |" << endl;
+}
+
+/* Prints a single row of the confusion matrix, but the "line" only.
+ * 
+ * # Arguments
+ * - `largest_cell_size`: The size (in number of digits) of the largest value in any of the cells.
+ * - `left`: The character to print at the leftmost part of the line.
+ * - `middle`: The character to print at each intersection of a vertical and horizontal line.
+ * - `right`: The character to print the rightmost part of the line.
+ * 
+ * # Returns
+ * Nothing, but does write it to stdout with proper formatting.
+ */
+void print_confusion_matrix_row_lines(size_t largest_cell_size, const char* left, const char* middle, const char* right) {
+	// Print the class cell
+	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
+	cout << ' ' << left << '-' << std::string(largest_class_size, '-');
+
+	// Next, print all of the cells
+	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
+		cout << '-' << middle << '-' << std::string(largest_cell_size, '-');
+	}
+
+	// End the line
+	cout << '-' << right << endl;
+}
+
+
+
+
+
+/***** NEURALNETWORK CLASS *****/
 NeuralNetwork::NeuralNetwork(NeuralNetConfig* config)
 :inputData(INPUT_SIZE * MINI_BATCH_SIZE),
  outputData(LAST_LAYER_SIZE * MINI_BATCH_SIZE)
@@ -263,41 +349,60 @@ void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
 	vector<myType> groundTruth(rows*columns);
 	vector<smallType> prediction(rows*columns);
 
-	// // reconstruct ground truth from output data
+	// reconstruct ground truth from output data
 	// funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
-	// // print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+	// print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+
+	// Reconstruct the ground truth from the testLabels
+	for (size_t i = 0; i < testLabels.size(); i++) {
+		groundTruth[i] = ((float) testLabels[i].first) / (1 << FLOAT_PRECISION);
+	}
 	
 	// reconstruct prediction from neural network
 	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
 	funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
 
 	// Sanity check that the prediction is what we're looking for
-	assert(testLabels.size() == prediction.size());
+	assert(groundTruth.size() == prediction.size());
 
 	// Now we can collect the metrics by comparing the results
-	size_t confusion_matrix[4] = { 0, 0, 0, 0 }; // TP FP FN TN
+	std::vector<int> confusion_matrix(LAST_LAYER_SIZE * LAST_LAYER_SIZE, 0);
 
 	// Start computing the accuracy and stuff
-	for (size_t i = 0; i < testLabels.size(); i++) {
-		// Populate the confusion matrix accordingly
-		smallType label = (smallType) (testLabels[i].first);
-		smallType pred  = prediction[i];
-		if (label == 1 && pred == 1) { confusion_matrix[0] += 1; } // TP
-		if (label == 0 && pred == 1) { confusion_matrix[1] += 1; } // FP
-		if (label == 1 && pred == 0) { confusion_matrix[2] += 1; } // FN
-		if (label == 0 && pred == 0) { confusion_matrix[3] += 1; } // TN
-	}
+	double accuracy = 0.0;
+	double total    = 0.0;
+	for (size_t i = 0; i < groundTruth.size(); i += LAST_LAYER_SIZE) {
+		// Compress the string of nodes to a single number (the class)
+		int act = -1;
+		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+			if (groundTruth[i + j] > 0.5) {
+				if (act > -1) { cerr << "WARNING: Golden truth sample " << (i / LAST_LAYER_SIZE) << " has multiple output bits set (assuming last one)" << endl; }
+				act = j;
+			}
+		}
+		if (act < 0) { cerr << "FATAL: No class in golden truth sample " << (i / LAST_LAYER_SIZE) << endl; exit(1); }
+		int pred = -1;
+		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+			if (prediction[i + j] > 0.5) {
+				if (pred > -1) { cerr << "WARNING: Predicted sample " << (i / LAST_LAYER_SIZE) << " has multiple output bits set (assuming last one)" << endl; }
+				pred = j;
+			}
+		}
+		if (pred < 0) { cerr << "FATAL: No class in predicted sample " << (i / LAST_LAYER_SIZE) << endl; exit(1); }
 
-	// Compute the metrics from this matrix
-	double accuracy  = ((double) (confusion_matrix[0] + confusion_matrix[3])) / ((double) testLabels.size());
-	double precision = confusion_matrix[0] > 0 ? ((double) confusion_matrix[0]) / ((double) (confusion_matrix[0] + confusion_matrix[1])) : 0;
-	double recall    = confusion_matrix[0] > 0 ? ((double) confusion_matrix[0]) / ((double) (confusion_matrix[0] + confusion_matrix[2])) : 0;
-	double f1        = precision * recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+		// Populate the confusion matrix accordingly
+		confusion_matrix[pred * LAST_LAYER_SIZE + act] += 1;
+
+		// Keep track for the global accuracy
+		if (act == pred) { accuracy += 1; }
+		total += 1;
+	}
+	accuracy /= total;
 
 	// Print 'em
 	size_t longest_len = 1;
-	for (size_t i = 0; i < 4; i++) {
-		size_t len = confusion_matrix[i] > 0 ? (size_t) floor(log10((double) confusion_matrix[i]) + 1.0) : 1;
+	for (size_t i = 0; i < confusion_matrix.size(); i++) {
+		size_t len = N_LENGTH(confusion_matrix[i]);
 		if (len > longest_len) {
 			longest_len = len;
 		}
@@ -305,36 +410,95 @@ void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
 	cout << "----------------------------------------------" << endl;
 	cout << "Confusion matrix:" << endl;
 	cout << "      Pred" << endl;
-	cout << "  ┌---┬-" << std::string(longest_len - 1, '-') << "--┬-" << std::string(longest_len - 1, '-') << "--┐" << endl;
-	cout << "  |   | " << std::string(longest_len - 1, ' ') << "1 | " << std::string(longest_len - 1, ' ') << "0 |" << endl;
-	cout << "R ├---┼-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
-	cout << "e | 1 | " << std::string(longest_len - N_LENGTH(confusion_matrix[0]), ' ') << confusion_matrix[0] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[1]), ' ') << confusion_matrix[1] << " |" << endl;
-	cout << "a ├---┼-" << std::string(longest_len - 1, '-') << "--┼-" << std::string(longest_len - 1, '-') << "--┤" << endl;
-	cout << "l | 0 | " << std::string(longest_len - N_LENGTH(confusion_matrix[2]), ' ') << confusion_matrix[2] << " | " << std::string(longest_len - N_LENGTH(confusion_matrix[3]), ' ') << confusion_matrix[3] << " |" << endl;
-	cout << "  └---┴-" << std::string(longest_len - 1, '-') << "--┴-" << std::string(longest_len - 1, '-') << "--┘" << endl;
-	cout << "----------------------------------------------" << endl;
-	cout << "Accuracy  : " << (accuracy * 100.0) << '%' << endl;
-	cout << "Precision : " << precision << endl;
-	cout << "Recall    : " << recall << endl;
-	cout << "F1        : " << f1 << endl;
+	// Print the top lines
+	print_confusion_matrix_row_lines(longest_len, "┌", "┬", "┐");
+	// Print the header
+	print_confusion_matrix_header(longest_len);
+	// Print the rows themselves
+	for (size_t y = 0; y < LAST_LAYER_SIZE; y++) {
+		print_confusion_matrix_row_lines(longest_len, "├", "┼", "┤");
+		print_confusion_matrix_row(confusion_matrix.data() + (y * LAST_LAYER_SIZE), y, longest_len);
+	}
+	// Print the bottom lines
+	print_confusion_matrix_row_lines(longest_len, "└", "┴", "┘");
 	cout << "----------------------------------------------" << endl;
 
+	// Print the global metrics
+	cout << "Global" << endl;
+	cout << " - Accuracy : " << (accuracy * 100.0) << '%' << endl;
+	cout << "----------------------------------------------" << endl;
+
+	// Then print the metrics per class
+	for (size_t clss = 0; clss < LAST_LAYER_SIZE; clss++) {
+		// Compute the TP, TN, FP and FN for this class
+		int tp = 0, tn = 0, fp = 0, fn = 0;
+		for (size_t y = 0; y < LAST_LAYER_SIZE; y++) {
+			for (size_t x = 0; x < LAST_LAYER_SIZE; x++) {
+				int n = confusion_matrix[y * LAST_LAYER_SIZE + x];
+
+				// True positives is a single cell, namely all those predicted as this class that were this class (easy)
+				if (x == clss && y == clss) { tp += n; }
+				// True negatives are all the cells that do not have anything to do as this class (i.e., were not this class and not predicted as such)
+				if (x != clss && y != clss) { tn += n; }
+				// False positives are all the cells predicted as this class that were not in fact this class
+				if (x != clss && y == clss) { fp += n; }
+				// Finally, false negatives are all the cells predicted as not this class that in fact were
+				if (x == clss && y != clss) { fn += n; }
+			}
+		}
+
+		// Compute the metrics from this matrix
+		double accuracy  = ((double) (tp + tn)) / ((double) (tp + tn + fp + fn));
+		double precision = tp > 0 ? ((double) tp) / ((double) (tp + fp)) : 0;
+		double recall    = tp > 0 ? ((double) tp) / ((double) (tp + fn)) : 0;
+		double f1        = precision * recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+
+		// Print them
+		cout << "Class " << clss << endl;
+		cout << " - Accuracy  : " << (accuracy * 100.0) << '%' << endl;
+		cout << " - Precision : " << precision << endl;
+		cout << " - Recall    : " << recall << endl;
+		cout << " - F1        : " << f1 << endl;
+		cout << "----------------------------------------------" << endl;
+	}
+
 	// Uncomment to see what we're actually comparing!
-	// cout << "Predicted labels:";
-	// for (size_t i = 0; i < prediction.size(); i++) {
-	// 	cout << ' ' << ((int) prediction[i]);
-	// }
-	// cout << endl;
-	// cout << "Actual labels (first):";
-	// for (size_t i = 0; i < testLabels.size(); i++) {
-	// 	cout << ' ' << ((int) testLabels[i].first);
-	// }
-	// cout << endl;
-	// cout << "Actual labels (second):";
-	// for (size_t i = 0; i < testLabels.size(); i++) {
-	// 	cout << ' ' << ((int) testLabels[i].second);
-	// }
-	// cout << endl;
+	cout << "Predicted labels (raw):";
+	for (size_t i = 0; i < prediction.size(); i++) {
+		cout << ' ' << ((int) prediction[i]);
+		if (i % 10 == 9) { cout << "   "; }
+	}
+	cout << endl;
+	cout << "Ground truth (raw):";
+	for (size_t i = 0; i < groundTruth.size(); i++) {
+		cout << ' ' << ((int) groundTruth[i]);
+		if (i % 10 == 9) { cout << "   "; }
+	}
+	cout << endl;
+	cout << "Predicted labels (class):";
+	for (size_t i = 0; i < prediction.size(); i += LAST_LAYER_SIZE) {
+		// Compress the string of nodes to a single number (the class)
+		int clss = -1;
+		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+			if (prediction[i + j] > 0.5) {
+				clss = j;
+			}
+		}
+		cout << ' ' << clss;
+	}
+	cout << endl;
+	cout << "Ground truth (class):";
+	for (size_t i = 0; i < groundTruth.size(); i += LAST_LAYER_SIZE) {
+		// Compress the string of nodes to a single number (the class)
+		int clss = -1;
+		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+			if (groundTruth[i + j] > 0.5) {
+				clss = j;
+			}
+		}
+		cout << ' ' << clss;
+	}
+	cout << endl;
 
 	// Finally, restore the old data
 	this->inputData = old_data;

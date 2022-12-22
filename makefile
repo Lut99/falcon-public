@@ -34,6 +34,13 @@ else
 MATMUL_TRACE :=
 endif
 
+# If you specify `PRELOAD_NET`, we will pass the macro to preload a network
+ifdef PRELOAD_NET
+PRELOAD_NETWORK := -D PRELOAD_NETWORK
+else
+PRELOAD_NETWORK := 
+endif
+
 
 ########################## Executable (Falcon.out) arguments ##########################
 # arg[0]: Falcon.out
@@ -57,11 +64,11 @@ OPEN_SSL_LOC := /data/swagh/conda
 RUN_TYPE := localhost
 # NETWORK {SecureML, Sarda, MiniONN, LeNet, AlexNet, and VGG16}
 ifndef NETWORK
-NETWORK := AlexNet # MiniONN
+NETWORK := LeNet # MiniONN
 endif
 # Dataset {MNIST, CIFAR10, and ImageNet}
 ifndef DATASET
-DATASET	:= CIFAR10 # MNIST
+DATASET	:= MNIST # MNIST
 endif
 # Security {Semi-honest or Malicious} 
 SECURITY:= Semi-honest
@@ -79,7 +86,7 @@ OBJ_FILES    	  += $(patsubst util/%.cpp, util/%.o,$(OBJ_CPP_FILES))
 HEADER_FILES       = $(wildcard src/*.h)
 
 # FLAGS := -static -g -O0 -w -std=c++11 -pthread -msse4.1 -maes -msse2 -mpclmul -fpermissive -fpic
-FLAGS := -O3 -w -g -std=c++14 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(MATMUL_TRACE)
+FLAGS := -O3 -w -g -std=c++14 -pthread -msse4.1 -maes -msse2 -mpclmul -fpic $(MATMUL_TRACE) $(PRELOAD_NETWORK)
 LIBS := -lcrypto -lssl
 OBJ_INCLUDES := -I 'lib_eigen/' -I 'util/Miracl/' -I 'util/' -I '$(OPEN_SSL_LOC)/include/'
 BMR_INCLUDES := -L./ -L$(OPEN_SSL_LOC)/lib/ $(OBJ_INCLUDES) 

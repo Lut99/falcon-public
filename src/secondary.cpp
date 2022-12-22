@@ -599,6 +599,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_input_1 = default_path+"input_"+to_string(partyNum);
 		string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
 		ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+		if (!f_input_1.is_open()) { cerr << "Failed to open preload input file '" << path_input_1 << "': " << strerror(errno) << endl; }
+		if (!f_input_2.is_open()) { cerr << "Failed to open preload input file '" << path_input_2 << "': " << strerror(errno) << endl; }
 
 		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
 		{
@@ -618,6 +620,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_weight1_1 = default_path+"weight1_"+to_string(partyNum);
 		string path_weight1_2 = default_path+"weight1_"+to_string(nextParty(partyNum));
 		ifstream f_weight1_1(path_weight1_1), f_weight1_2(path_weight1_2);
+		if (!f_weight1_1.is_open()) { cerr << "Failed to open preload weights file 1 '" << path_weight1_1 << "': " << strerror(errno) << endl; }
+		if (!f_weight1_2.is_open()) { cerr << "Failed to open preload weights file 1 '" << path_weight1_2 << "': " << strerror(errno) << endl; }
 
 		for (int row = 0; row < 5*5*1*20; ++row)
 		{
@@ -636,6 +640,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_weight2_1 = default_path+"weight2_"+to_string(partyNum);
 		string path_weight2_2 = default_path+"weight2_"+to_string(nextParty(partyNum));
 		ifstream f_weight2_1(path_weight2_1), f_weight2_2(path_weight2_2);
+		if (!f_weight2_1.is_open()) { cerr << "Failed to open preload weights file 2 '" << path_weight2_1 << "': " << strerror(errno) << endl; }
+		if (!f_weight2_2.is_open()) { cerr << "Failed to open preload weights file 2 '" << path_weight2_2 << "': " << strerror(errno) << endl; }
 
 
 		for (int row = 0; row < 25*20*50; ++row)
@@ -655,6 +661,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_weight3_1 = default_path+"weight3_"+to_string(partyNum);
 		string path_weight3_2 = default_path+"weight3_"+to_string(nextParty(partyNum));
 		ifstream f_weight3_1(path_weight3_1), f_weight3_2(path_weight3_2);
+		if (!f_weight3_1.is_open()) { cerr << "Failed to open preload weights file 3 '" << path_weight3_1 << "': " << strerror(errno) << endl; }
+		if (!f_weight3_2.is_open()) { cerr << "Failed to open preload weights file 3 '" << path_weight3_2 << "': " << strerror(errno) << endl; }
 
 		for (int column = 0; column < 500; ++column)
 		{
@@ -677,6 +685,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_weight4_1 = default_path+"weight4_"+to_string(partyNum);
 		string path_weight4_2 = default_path+"weight4_"+to_string(nextParty(partyNum));
 		ifstream f_weight4_1(path_weight4_1), f_weight4_2(path_weight4_2);
+		if (!f_weight4_1.is_open()) { cerr << "Failed to open preload weights file 4 '" << path_weight4_1 << "': " << strerror(errno) << endl; }
+		if (!f_weight4_2.is_open()) { cerr << "Failed to open preload weights file 4 '" << path_weight4_2 << "': " << strerror(errno) << endl; }
 
 		for (int column = 0; column < 10; ++column)
 		{
@@ -698,6 +708,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_bias1_1 = default_path+"bias1_"+to_string(partyNum);
 		string path_bias1_2 = default_path+"bias1_"+to_string(nextParty(partyNum));
 		ifstream f_bias1_1(path_bias1_1), f_bias1_2(path_bias1_2);
+		if (!f_bias1_1.is_open()) { cerr << "Failed to open preload bias file 1 '" << path_bias1_1 << "': " << strerror(errno) << endl; }
+		if (!f_bias1_2.is_open()) { cerr << "Failed to open preload bias file 1 '" << path_bias1_2 << "': " << strerror(errno) << endl; }
 
 		for (int i = 0; i < 20; ++i)
 		{
@@ -715,6 +727,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_bias2_1 = default_path+"bias2_"+to_string(partyNum);
 		string path_bias2_2 = default_path+"bias2_"+to_string(nextParty(partyNum));
 		ifstream f_bias2_1(path_bias2_1), f_bias2_2(path_bias2_2);
+		if (!f_bias2_1.is_open()) { cerr << "Failed to open preload bias file 2 '" << path_bias2_1 << "': " << strerror(errno) << endl; }
+		if (!f_bias2_2.is_open()) { cerr << "Failed to open preload bias file 2 '" << path_bias2_2 << "': " << strerror(errno) << endl; }
 
 		for (int i = 0; i < 50; ++i)
 		{
@@ -732,6 +746,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_bias3_1 = default_path+"bias3_"+to_string(partyNum);
 		string path_bias3_2 = default_path+"bias3_"+to_string(nextParty(partyNum));
 		ifstream f_bias3_1(path_bias3_1), f_bias3_2(path_bias3_2);
+		if (!f_bias3_1.is_open()) { cerr << "Failed to open preload bias file 3 '" << path_bias3_1 << "': " << strerror(errno) << endl; }
+		if (!f_bias3_2.is_open()) { cerr << "Failed to open preload bias file 3 '" << path_bias3_2 << "': " << strerror(errno) << endl; }
 
 		for (int i = 0; i < 500; ++i)
 		{
@@ -749,6 +765,8 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 		string path_bias4_1 = default_path+"bias4_"+to_string(partyNum);
 		string path_bias4_2 = default_path+"bias4_"+to_string(nextParty(partyNum));
 		ifstream f_bias4_1(path_bias4_1), f_bias4_2(path_bias4_2);
+		if (!f_bias4_1.is_open()) { cerr << "Failed to open preload bias file 4 '" << path_bias4_1 << "': " << strerror(errno) << endl; }
+		if (!f_bias4_2.is_open()) { cerr << "Failed to open preload bias file 4 '" << path_bias4_2 << "': " << strerror(errno) << endl; }
 
 		for (int i = 0; i < 10; ++i)
 		{
@@ -910,9 +928,7 @@ void loadData(string net, string dataset)
 		k_next >> temp_next; k_prev >> temp_prev;
 		testLabels.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
 	}
-	k_next.close(); k_prev.close();		
-
-	cout << "Loading data done....." << endl;
+	k_next.close(); k_prev.close();
 }
 
 

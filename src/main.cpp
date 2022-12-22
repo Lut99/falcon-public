@@ -9,11 +9,23 @@
 #include "NeuralNetwork.h"
 #include "unitTests.h"
 
+#include "CNNLayer.h"
+#include "FCLayer.h"
+
 int partyNum;
 AESObject* aes_indep;
 AESObject* aes_next;
 AESObject* aes_prev;
 Precompute PrecomputeObject;
+
+void print_vec(const RSSVectorMyType& vec) {
+	cout << '[';
+	for (size_t i = 0; i < (vec.size() > 10 ? 10 : vec.size()); i++) {
+		cout << " (" << ((int) vec[i].first) << ", " << ((int) vec[i].second) << ')';
+	}
+	if (vec.size() > 10) { cout << " ..."; }
+	cout << " ]" << endl;
+}
 
 
 int main(int argc, char** argv)
@@ -31,8 +43,8 @@ int main(int argc, char** argv)
 	{network = argv[6]; dataset = argv[7]; security = argv[8];}
 	else
 	{
-		network = "AlexNet";
-		dataset = "CIFAR10";
+		network = "LeNet";
+		dataset = "MNIST";
 		security = "Semi-honest";
 	}
 
@@ -63,6 +75,46 @@ int main(int argc, char** argv)
 	// network += " preloaded"; PRELOADING = true;
 	// preload_network(PRELOADING, network, net);
 
+	#ifdef PRELOAD_NETWORK
+	preload_network(true, network, net);
+	#endif
+	{
+		RSSVectorMyType* weights;
+		RSSVectorMyType* biases;
+
+		// Layer 0
+		weights = ((CNNLayer*) net->layers[0])->getWeights();
+		biases  = ((CNNLayer*) net->layers[0])->getBias();
+		cout << "0 (CNNLayer) weights: ";
+		print_vec(*weights);
+		cout << "0 (CNNLayer) biases: ";
+		print_vec(*biases);
+
+		// Layer 3
+		weights = ((CNNLayer*) net->layers[3])->getWeights();
+		biases  = ((CNNLayer*) net->layers[3])->getBias();
+		cout << "3 (CNNLayer) weights: ";
+		print_vec(*weights);
+		cout << "3 (CNNLayer) biases: ";
+		print_vec(*biases);
+
+		// Layer 6
+		weights = ((FCLayer*) net->layers[6])->getWeights();
+		biases  = ((FCLayer*) net->layers[6])->getBias();
+		cout << "6 (FCLayer) weights: ";
+		print_vec(*weights);
+		cout << "6 (FCLayer) biases: ";
+		print_vec(*biases);
+
+		// Layer 8
+		weights = ((FCLayer*) net->layers[8])->getWeights();
+		biases  = ((FCLayer*) net->layers[8])->getBias();
+		cout << "8 (FCLayer) weights: ";
+		print_vec(*weights);
+		cout << "8 (FCLayer) biases: ";
+		print_vec(*biases);
+	}
+
 	start_m();
 	//Run unit tests in two modes: 
 	//	1. Debug {Mat-Mul, DotProd, PC, Wrap, ReLUPrime, ReLU, Division, BN, SSBits, SS, and Maxpool}
@@ -77,9 +129,11 @@ int main(int argc, char** argv)
 	// string what = "F";
 	// runOnly(net, l, what, network);
 
-	//Run training
-	network += " train";
+	//Run training if no preloading happened
+	#ifndef PRELOAD_NETWORK
+	// network += " train";
 	train(net);
+	#endif
 
 	//Run inference (possibly with preloading a network)
 	// network += " test";
@@ -98,13 +152,13 @@ int main(int argc, char** argv)
 	if (dataset.compare("MNIST") == 0) {
 		// I don't know the actual image sizes, just that the total should be 784...
 		net->collectMetrics(784, 1, 1);
-	} else if (network.compare("AlexNet train") == 0 && dataset.compare("CIFAR10") == 0) {
+	} else if (network.compare("AlexNet") == 0 && dataset.compare("CIFAR10") == 0) {
 		net->collectMetrics(33, 33, 3);
-	} else if (network.compare("AlexNet train") == 0 && dataset.compare("ImageNet") == 0) {
+	} else if (network.compare("AlexNet") == 0 && dataset.compare("ImageNet") == 0) {
 		net->collectMetrics(56, 56, 3);
-	} else if (network.compare("VGG16 train") == 0 && dataset.compare("CIFAR10") == 0) {
+	} else if (network.compare("VGG16") == 0 && dataset.compare("CIFAR10") == 0) {
 		net->collectMetrics(32, 32, 3);
-	} else if (network.compare("VGG16 train") == 0 && dataset.compare("ImageNet") == 0) {
+	} else if (network.compare("VGG16") == 0 && dataset.compare("ImageNet") == 0) {
 		net->collectMetrics(64, 64, 3);
 	} else {
 		cerr << "Encountered unknown neural network / dataset combination '" << network << "' / '" << dataset << '\'' << endl;

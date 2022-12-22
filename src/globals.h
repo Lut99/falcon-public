@@ -38,13 +38,14 @@
 // I _think_, though I don't fully understand the math, that this is used to get a certain precision of a floating-point number (wow!)
 // No I mean, this mostly appears in the context `<some number> / (1 << FLOAT_PRECISION)`, which can be thought of as `<some number> / (2 ^ FLOAT_PRECISION)` (see the comment on EPSILON to see why)
 // There's also talk of "setting it to a fixed precision"
-#define FLOAT_PRECISION 13
+// #define FLOAT_PRECISION 13
+#define FLOAT_PRECISION 4
 #define PRECISE_DIVISION false
 
 
 /********************* Neural Network globals *********************/
 //Batch size has to be a power of two
-#define LOG_MINI_BATCH 4
+#define LOG_MINI_BATCH 7
 #define MINI_BATCH_SIZE (1 << LOG_MINI_BATCH)
 #define LOG_LEARNING_RATE 5
 #define LEARNING_RATE (1 << (FLOAT_PRECISION - LOG_LEARNING_RATE))
@@ -55,8 +56,10 @@
 
 
 /********************* Typedefs and others *********************/
-typedef uint32_t myType;
-typedef uint8_t smallType;
+// typedef uint32_t myType;
+// typedef uint8_t smallType;
+typedef uint8_t myType;
+typedef char smallType;
 typedef std::pair<myType, myType> RSSMyType;
 typedef std::pair<smallType, smallType> RSSSmallType;
 typedef std::vector<RSSMyType> RSSVectorMyType;
