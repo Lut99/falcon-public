@@ -56,10 +56,10 @@
 
 
 /********************* Typedefs and others *********************/
-// typedef uint32_t myType;
-// typedef uint8_t smallType;
-typedef uint8_t myType;
-typedef char smallType;
+typedef uint32_t myType;
+typedef uint8_t smallType;
+// typedef uint8_t myType;
+// typedef char smallType;
 typedef std::pair<myType, myType> RSSMyType;
 typedef std::pair<smallType, smallType> RSSSmallType;
 typedef std::vector<RSSMyType> RSSVectorMyType;

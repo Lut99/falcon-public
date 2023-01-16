@@ -79,7 +79,7 @@ SECURITY:= Semi-honest
 
 #########################################################################################
 CXX=g++
-SRC_CPP_FILES     := $(wildcard src/*.cpp)
+SRC_CPP_FILES     := $(filter-out src/generic_accuracy.cpp, $(wildcard src/*.cpp))
 OBJ_CPP_FILES     := $(wildcard util/*.cpp)
 OBJ_FILES    	  := $(patsubst src/%.cpp, src/%.o,$(SRC_CPP_FILES))
 OBJ_FILES    	  += $(patsubst util/%.cpp, util/%.o,$(OBJ_CPP_FILES))
@@ -143,5 +143,13 @@ one: Falcon.out ## Run this to only execute Party 1 (useful for multiple termina
 two: Falcon.out ## Run this to only execute Party 2 (useful for multiple terminal runs)
 	$(MAIN_EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC
 #########################################################################################
+
+
+################################## TOOLS ################################################
+Accuracy.out: src/generic_accuracy.o src/Accuracy.o
+	g++ $(FLAGS) -o $@ $^ $(BMR_INCLUDES) $(LIBS)
+accuracy: Accuracy.out
+#########################################################################################
+
 
 .PHONY: help

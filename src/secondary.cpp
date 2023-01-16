@@ -144,7 +144,7 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 	float temp_next = 0, temp_prev = 0;
 	string default_path = "files/preload/"+which_network(network)+"/";
 	//Set to true if you want the zeros files generated.
-	bool ZEROS = false;
+	bool ZEROS = true;
 
 	if (which_network(network).compare("SecureML") == 0)
 	{
