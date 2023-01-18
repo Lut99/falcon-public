@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 16:50:30
  * Last edited:
- *   16 Jan 2023, 18:15:49
+ *   18 Jan 2023, 13:50:50
  * Auto updated?
  *   Yes
  *
@@ -14,6 +14,7 @@
  *   implementation on other languages, e.g., Python.
 **/
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -230,25 +231,9 @@ int main(int argc, const char** argv) {
 
 
     /*** PRINTING ***/
-    // Convert the floating-point to fixed-point
-    vector<smallType> ground_truth_fixed(ground_truth.size());
-    for (size_t i = 0; i < ground_truth.size(); i++) {
-        ground_truth_fixed[i] = (smallType) (((float) ground_truth[i]) / ((float) (1 << FLOAT_PRECISION)));
-        if (i > 0) { cout << " "; }
-        cout << ground_truth[i] << "/" << ((int) ground_truth_fixed[i]);
-    }
-    cout << endl;
-    vector<smallType> predicted_fixed(predicted.size());
-    for (size_t i = 0; i < predicted.size(); i++) {
-        predicted_fixed[i] = (smallType) (((float) predicted[i]) / ((float) (1 << FLOAT_PRECISION)));
-        // if (i > 0) { cout << " "; }
-        // cout << predicted[i] << "/" << ((int) predicted_fixed[i]);
-    }
-    cout << endl;
-
     // Simply run the secondary file
     LAST_LAYER_SIZE = n_classes;
-    printMetrics(ground_truth_fixed, predicted_fixed);
+    printMetrics(ground_truth, predicted);
 
 
 

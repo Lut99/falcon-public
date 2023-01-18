@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:39:55
  * Last edited:
- *   16 Jan 2023, 17:40:45
+ *   18 Jan 2023, 13:49:57
  * Auto updated?
  *   Yes
  *
@@ -17,8 +17,6 @@
 
 #include <vector>
 
-#include "globals.h"
-
 
 /* Prints the confusion matrix and other metrics for the given ground truth and predicted values.
  * 
@@ -29,6 +27,6 @@
  * # Returns
  * Nothing directly, but does populate `stdout` with tables and other results.
  */
-void printMetrics(const std::vector<smallType>& actual, const std::vector<smallType>& predicted);
+void printMetrics(const std::vector<float>& actual, const std::vector<float>& predicted);
 
 #endif

@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:41:23
  * Last edited:
- *   16 Jan 2023, 18:12:16
+ *   18 Jan 2023, 13:50:11
  * Auto updated?
  *   Yes
  *
@@ -15,6 +15,7 @@
 #include <cmath>
 #include <iostream>
 
+#include "globals.h"
 #include "Accuracy.h"
 
 using namespace std;
@@ -116,7 +117,7 @@ void print_confusion_matrix_row_lines(size_t largest_cell_size, const char* left
 
 
 /***** LIBRARY *****/
-void printMetrics(const vector<smallType>& actual, const vector<smallType>& predicted) {
+void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 	// Sanity check that the prediction is what we're looking for
 	assert(actual.size() == predicted.size());
 
@@ -219,19 +220,19 @@ void printMetrics(const vector<smallType>& actual, const vector<smallType>& pred
 
 	// Uncomment to see what we're actually comparing!
 	cout << "Predicted labels (raw):";
-	for (size_t i = 0; i < predicted.size(); i++) {
+	for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i++) {
 		cout << ' ' << ((int) predicted[i]);
 		if (i % 10 == 9) { cout << "   "; }
 	}
 	cout << endl;
 	cout << "Ground truth (raw):";
-	for (size_t i = 0; i < actual.size(); i++) {
+	for (size_t i = 0; i < (actual.size() < (10 * LAST_LAYER_SIZE) ? actual.size() : (10 * LAST_LAYER_SIZE)); i++) {
 		cout << ' ' << ((int) actual[i]);
 		if (i % 10 == 9) { cout << "   "; }
 	}
 	cout << endl;
 	cout << "Predicted labels (class):";
-	for (size_t i = 0; i < predicted.size(); i += LAST_LAYER_SIZE) {
+	for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
 		// Compress the string of nodes to a single number (the class)
 		int clss = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
@@ -243,7 +244,7 @@ void printMetrics(const vector<smallType>& actual, const vector<smallType>& pred
 	}
 	cout << endl;
 	cout << "Ground truth (class):";
-	for (size_t i = 0; i < actual.size(); i += LAST_LAYER_SIZE) {
+	for (size_t i = 0; i < (actual.size() < (10 * LAST_LAYER_SIZE) ? actual.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
 		// Compress the string of nodes to a single number (the class)
 		int clss = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {

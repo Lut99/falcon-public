@@ -269,15 +269,23 @@ void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
 
 	// Reconstruct the ground truth from the testLabels
 	for (size_t i = 0; i < testLabels.size(); i++) {
-		groundTruth[i] = ((float) testLabels[i].first) / (1 << FLOAT_PRECISION);
+		groundTruth[i] = ((float) testLabels[i].second) / (1 << FLOAT_PRECISION);
 	}
 	
 	// reconstruct prediction from neural network
 	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
 	funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
 
+	// Cast both to floats
+	vector<float> groudTruth_float(rows*columns);
+	vector<float> prediction_float(rows*columns);
+	for (size_t i = 0; i < (rows*columns); i++) {
+		groudTruth_float[i] = (float) groundTruth[i];
+		prediction_float[i] = (float) prediction[i];
+	}
+
 	// Put the rest into the global function
-	printMetrics(groundTruth, prediction);
+	printMetrics(groudTruth_float, prediction_float);
 
 	// Finally, restore the old data
 	this->inputData = old_data;
