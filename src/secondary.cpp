@@ -23,12 +23,15 @@ extern smallType additionModPrime[PRIME_NUMBER][PRIME_NUMBER];
 extern smallType subtractModPrime[PRIME_NUMBER][PRIME_NUMBER];
 extern smallType multiplicationModPrime[PRIME_NUMBER][PRIME_NUMBER];
 
-RSSVectorMyType trainData, testData;
-RSSVectorMyType trainLabels, testLabels;
-size_t trainDataBatchCounter = 0;
-size_t trainLabelsBatchCounter = 0;
-size_t testDataBatchCounter = 0;
-size_t testLabelsBatchCounter = 0;
+// RSSVectorMyType trainData, testData;
+// RSSVectorMyType trainLabels, testLabels;
+// size_t trainDataBatchCounter = 0;
+// size_t trainLabelsBatchCounter = 0;
+// size_t testDataBatchCounter = 0;
+// size_t testLabelsBatchCounter = 0;
+
+ifstream trainDataPrev, trainDataNext, testDataPrev, testDataNext;
+ifstream trainLabelsPrev, trainLabelsNext, testLabelsPrev, testLabelsNext;
 
 size_t INPUT_SIZE;
 size_t LAST_LAYER_SIZE;
@@ -73,8 +76,8 @@ void train(NeuralNetwork* net)
 	for (int i = 0; i < NUM_ITERATIONS; ++i)
 	{
 		// cout << "----------------------------------" << endl;  
-		// cout << "Iteration " << i << endl;
-		readMiniBatch(net, "TRAINING", MINI_BATCH_SIZE);
+		cout << "Iteration " << i << endl;
+		readMiniBatch(net, "TRAINING");
 		net->forward();
 		net->backward();
 		// cout << "----------------------------------" << endl;  
@@ -95,7 +98,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 	for (int i = 0; i < NUM_ITERATIONS; ++i)
 	{
 		if (!PRELOADING)
-			readMiniBatch(net, "TESTING", MINI_BATCH_SIZE);
+			readMiniBatch(net, "TESTING");
 
 		net->forward();
 		// net->predict(maxIndex);
@@ -893,99 +896,168 @@ void loadData(string net, string dataset)
 		party_num = "<unknown party>";
 	}
 
-	float temp_next = 0, temp_prev = 0;
-	OPEN_FILE(party_num, f_next, filename_train_data_next);
-	OPEN_FILE(party_num, f_prev, filename_train_data_prev);
-	for (int i = 0; i < TRAINING_DATA_SIZE * INPUT_SIZE; ++i)
-	{
-		f_next >> temp_next; f_prev >> temp_prev;
-		trainData.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
-	}
-	f_next.close(); f_prev.close();
+	// float temp_next = 0, temp_prev = 0;
+	// OPEN_FILE(party_num, f_next, filename_train_data_next);
+	// OPEN_FILE(party_num, f_prev, filename_train_data_prev);
+	// for (int i = 0; i < TRAINING_DATA_SIZE * INPUT_SIZE; ++i)
+	// {
+	// 	f_next >> temp_next; f_prev >> temp_prev;
+	// 	trainData.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
+	// }
+	// f_next.close(); f_prev.close();
 
-	OPEN_FILE(party_num, g_next, filename_train_labels_next);
-	OPEN_FILE(party_num, g_prev, filename_train_labels_prev);
-	for (int i = 0; i < TRAINING_DATA_SIZE * LAST_LAYER_SIZE; ++i)
-	{
-		g_next >> temp_next; g_prev >> temp_prev;
-		trainLabels.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
-	}
-	g_next.close(); g_prev.close();
+	// OPEN_FILE(party_num, g_next, filename_train_labels_next);
+	// OPEN_FILE(party_num, g_prev, filename_train_labels_prev);
+	// for (int i = 0; i < TRAINING_DATA_SIZE * LAST_LAYER_SIZE; ++i)
+	// {
+	// 	g_next >> temp_next; g_prev >> temp_prev;
+	// 	trainLabels.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
+	// }
+	// g_next.close(); g_prev.close();
 
-	OPEN_FILE(party_num, h_next, filename_test_data_next);
-	OPEN_FILE(party_num, h_prev, filename_test_data_prev);
-	for (int i = 0; i < TEST_DATA_SIZE * INPUT_SIZE; ++i)
-	{
-		h_next >> temp_next; h_prev >> temp_prev;
-		testData.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
-	}
-	h_next.close(); h_prev.close();
+	// OPEN_FILE(party_num, h_next, filename_test_data_next);
+	// OPEN_FILE(party_num, h_prev, filename_test_data_prev);
+	// for (int i = 0; i < TEST_DATA_SIZE * INPUT_SIZE; ++i)
+	// {
+	// 	h_next >> temp_next; h_prev >> temp_prev;
+	// 	testData.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
+	// }
+	// h_next.close(); h_prev.close();
 
-	OPEN_FILE(party_num, k_next, filename_test_labels_next);
-	OPEN_FILE(party_num, k_prev, filename_test_labels_prev);
-	for (int i = 0; i < TEST_DATA_SIZE * LAST_LAYER_SIZE; ++i)
-	{
-		k_next >> temp_next; k_prev >> temp_prev;
-		testLabels.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
-	}
-	k_next.close(); k_prev.close();
+	// OPEN_FILE(party_num, k_next, filename_test_labels_next);
+	// OPEN_FILE(party_num, k_prev, filename_test_labels_prev);
+	// for (int i = 0; i < TEST_DATA_SIZE * LAST_LAYER_SIZE; ++i)
+	// {
+	// 	k_next >> temp_next; k_prev >> temp_prev;
+	// 	testLabels.push_back(std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev)));
+	// }
+	// k_next.close(); k_prev.close();
+
+	// Open the training data
+	trainDataPrev = ifstream(filename_train_data_prev);
+	if (!trainDataPrev.is_open()) { cerr << party_num << ") Failed to open training dataset (prev) '" << filename_train_data_prev << "': " << strerror(errno) << endl; }
+	trainDataNext = ifstream(filename_train_data_next);
+	if (!trainDataNext.is_open()) { cerr << party_num << ") Failed to open training dataset (next) '" << filename_train_data_next << "': " << strerror(errno) << endl; }
+
+	// Open the test data
+	testDataPrev = ifstream(filename_test_data_prev);
+	if (!testDataPrev.is_open()) { cerr << party_num << ") Failed to open test dataset (prev) '" << filename_train_data_prev << "': " << strerror(errno) << endl; }
+	testDataNext = ifstream(filename_test_data_next);
+	if (!testDataNext.is_open()) { cerr << party_num << ") Failed to open test dataset (next) '" << filename_test_data_next << "': " << strerror(errno) << endl; }
+
+	// Open the training labels
+	trainLabelsPrev = ifstream(filename_train_labels_prev);
+	if (!trainLabelsPrev.is_open()) { cerr << party_num << ") Failed to open training labels (prev) '" << filename_train_labels_prev << "': " << strerror(errno) << endl; }
+	trainLabelsNext = ifstream(filename_train_labels_next);
+	if (!trainLabelsNext.is_open()) { cerr << party_num << ") Failed to open training labels (next) '" << filename_train_labels_next << "': " << strerror(errno) << endl; }
+
+	// Open the test labels
+	testLabelsPrev = ifstream(filename_test_labels_prev);
+	if (!testLabelsPrev.is_open()) { cerr << party_num << ") Failed to open test labels (prev) '" << filename_test_labels_prev << "': " << strerror(errno) << endl; }
+	testLabelsNext = ifstream(filename_test_labels_next);
+	if (!testLabelsNext.is_open()) { cerr << party_num << ") Failed to open test labels (next) '" << filename_test_labels_next << "': " << strerror(errno) << endl; }
 }
 
 
-void readMiniBatch(NeuralNetwork* net, string phase, size_t batch_size)
+void readMiniBatch(NeuralNetwork* net, string phase)
 {
-	size_t s = trainData.size();
-	size_t t = trainLabels.size();
+	// size_t s = trainData.size();
+	// size_t t = trainLabels.size();
 
-	if (phase == "TRAINING")
-	{
-		net->inputData.resize(INPUT_SIZE * batch_size);
-		for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
-			net->inputData[i] = trainData[(trainDataBatchCounter + i)%s];
+	// if (phase == "TRAINING")
+	// {
+	// 	net->inputData.resize(INPUT_SIZE * batch_size);
+	// 	for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
+	// 		net->inputData[i] = trainData[(trainDataBatchCounter + i)%s];
 
-		net->outputData.resize(LAST_LAYER_SIZE * batch_size);
-		for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
-			net->outputData[i] = trainLabels[(trainLabelsBatchCounter + i)%t];
+	// 	net->outputData.resize(LAST_LAYER_SIZE * batch_size);
+	// 	for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
+	// 		net->outputData[i] = trainLabels[(trainLabelsBatchCounter + i)%t];
 
-		trainDataBatchCounter += INPUT_SIZE * batch_size;
-		trainLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
+	// 	trainDataBatchCounter += INPUT_SIZE * batch_size;
+	// 	trainLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
+	// }
+
+	// if (trainDataBatchCounter > s)
+	// 	trainDataBatchCounter -= s;
+
+	// if (trainLabelsBatchCounter > t)
+	// 	trainLabelsBatchCounter -= t;
+
+
+
+	// size_t p = testData.size();
+	// size_t q = testLabels.size();
+
+	// if (phase == "TESTING")
+	// {
+	// 	net->inputData.resize(INPUT_SIZE * batch_size);
+	// 	for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
+	// 		net->inputData[i] = testData[(testDataBatchCounter + i)%p];
+
+	// 	net->outputData.resize(LAST_LAYER_SIZE * batch_size);
+	// 	for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
+	// 		net->outputData[i] = testLabels[(testLabelsBatchCounter + i)%q];
+
+	// 	testDataBatchCounter += INPUT_SIZE * batch_size;
+	// 	testLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
+	// }
+
+	// if (testDataBatchCounter > p)
+	// 	testDataBatchCounter -= p;
+
+	// if (testLabelsBatchCounter > q)
+	// 	testLabelsBatchCounter -= q;
+
+
+	// // Always update the layers' input sizes too
+	// for (size_t i = 0; i < net->layers.size(); i++) {
+	// 	net->layers[i]->setInputRows(batch_size);
+	// }
+
+	// Set the handles to read from
+	ifstream& dataPrev   = (phase == "TRAINING" ? trainDataPrev : testDataPrev);
+	ifstream& dataNext   = (phase == "TRAINING" ? trainDataNext : testDataNext);
+	ifstream& labelsPrev = (phase == "TRAINING" ? trainLabelsPrev : testLabelsPrev);
+	ifstream& labelsNext = (phase == "TRAINING" ? trainLabelsNext : testLabelsNext);
+
+	// Read the next input batch
+	net->inputData.resize(INPUT_SIZE * MINI_BATCH_SIZE);
+	myType temp_prev, temp_next;
+	for (size_t i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; i++) {
+		// Read the two next values from the files
+		if (!(dataPrev >> temp_prev)) {
+			// Re-try after seeking back to the start
+			dataPrev.seekg(streampos(0));
+			if (!dataPrev >> temp_prev) { cerr << "Failed to read next integer from " << phase << " data (prev): " << strerror(errno) << endl; }
+		}
+		if (!(dataNext >> temp_next)) {
+			// Re-try after seeking back to the start
+			dataNext.seekg(streampos(0));
+			if (!dataNext >> temp_next) { cerr << "Failed to read next integer from " << phase << " data (next): " << strerror(errno) << endl; }
+		}
+
+		// Store them into the inputData
+		net->inputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
 	}
 
-	if (trainDataBatchCounter > s)
-		trainDataBatchCounter -= s;
+	// Read the next label batch
+	net->outputData.resize(LAST_LAYER_SIZE * MINI_BATCH_SIZE);
+	for (size_t i = 0; i < LAST_LAYER_SIZE * MINI_BATCH_SIZE; i++) {
+		// Read the two next values from the files
+		if (!(labelsPrev >> temp_prev)) {
+			// Re-try after seeking back to the start
+			labelsPrev.seekg(streampos(0));
+			if (!labelsPrev >> temp_prev) { cerr << "Failed to read next integer from " << phase << " labels (prev): " << strerror(errno) << endl; }
+		}
+		if (!(labelsNext >> temp_next)) {
+			// Re-try after seeking back to the start
+			labelsNext.seekg(streampos(0));
+			if (!labelsNext >> temp_next) { cerr << "Failed to read next integer from " << phase << " labels (next): " << strerror(errno) << endl; }
+		}
 
-	if (trainLabelsBatchCounter > t)
-		trainLabelsBatchCounter -= t;
-
-
-
-	size_t p = testData.size();
-	size_t q = testLabels.size();
-
-	if (phase == "TESTING")
-	{
-		net->inputData.resize(INPUT_SIZE * batch_size);
-		for (int i = 0; i < INPUT_SIZE * batch_size; ++i)
-			net->inputData[i] = testData[(testDataBatchCounter + i)%p];
-
-		net->outputData.resize(LAST_LAYER_SIZE * batch_size);
-		for (int i = 0; i < LAST_LAYER_SIZE * batch_size; ++i)
-			net->outputData[i] = testLabels[(testLabelsBatchCounter + i)%q];
-
-		testDataBatchCounter += INPUT_SIZE * batch_size;
-		testLabelsBatchCounter += LAST_LAYER_SIZE * batch_size;
-	}
-
-	if (testDataBatchCounter > p)
-		testDataBatchCounter -= p;
-
-	if (testLabelsBatchCounter > q)
-		testLabelsBatchCounter -= q;
-
-
-	// Always update the layers too
-	for (size_t i = 0; i < net->layers.size(); i++) {
-		net->layers[i]->setInputRows(batch_size);
+		// Store them into the inputData
+		net->outputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
 	}
 }
 

@@ -26,6 +26,7 @@ public:
 	 * Note that we assume that it has already been trained.
 	 * 
 	 * # Arguments
+	 * - `n_samples`: The number of samples to collect the metrics for. Should be divisible by the current batch size (i.e., MINI_BATCH_SIZE).
 	 * - `width`: The width of the input images, in pixels.
 	 * - `height`: The height of the input images, in pixels.
 	 * - `depth`: The depth of the input image pixels, i.e., how many bytes are needed (1 for grayscale, 3 for RGB).
@@ -33,5 +34,5 @@ public:
 	 * # Returns
 	 * Nothing directly, but does print the metrics to `stdout` in a table-like fashion.
 	 */
-	void collectMetrics(size_t width, size_t height, size_t depth);
+	void collectMetrics(size_t n_samples, size_t width, size_t height, size_t depth);
 };

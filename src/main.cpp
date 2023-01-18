@@ -78,42 +78,42 @@ int main(int argc, char** argv)
 	#ifdef PRELOAD_NETWORK
 	preload_network(true, network, net);
 	#endif
-	{
-		RSSVectorMyType* weights;
-		RSSVectorMyType* biases;
+	// {
+	// 	RSSVectorMyType* weights;
+	// 	RSSVectorMyType* biases;
 
-		// Layer 0
-		weights = ((CNNLayer*) net->layers[0])->getWeights();
-		biases  = ((CNNLayer*) net->layers[0])->getBias();
-		cout << "0 (CNNLayer) weights: ";
-		print_vec(*weights);
-		cout << "0 (CNNLayer) biases: ";
-		print_vec(*biases);
+	// 	// Layer 0
+	// 	weights = ((CNNLayer*) net->layers[0])->getWeights();
+	// 	biases  = ((CNNLayer*) net->layers[0])->getBias();
+	// 	cout << "0 (CNNLayer) weights: ";
+	// 	print_vec(*weights);
+	// 	cout << "0 (CNNLayer) biases: ";
+	// 	print_vec(*biases);
 
-		// Layer 3
-		weights = ((CNNLayer*) net->layers[3])->getWeights();
-		biases  = ((CNNLayer*) net->layers[3])->getBias();
-		cout << "3 (CNNLayer) weights: ";
-		print_vec(*weights);
-		cout << "3 (CNNLayer) biases: ";
-		print_vec(*biases);
+	// 	// Layer 3
+	// 	weights = ((CNNLayer*) net->layers[3])->getWeights();
+	// 	biases  = ((CNNLayer*) net->layers[3])->getBias();
+	// 	cout << "3 (CNNLayer) weights: ";
+	// 	print_vec(*weights);
+	// 	cout << "3 (CNNLayer) biases: ";
+	// 	print_vec(*biases);
 
-		// Layer 6
-		weights = ((FCLayer*) net->layers[6])->getWeights();
-		biases  = ((FCLayer*) net->layers[6])->getBias();
-		cout << "6 (FCLayer) weights: ";
-		print_vec(*weights);
-		cout << "6 (FCLayer) biases: ";
-		print_vec(*biases);
+	// 	// Layer 6
+	// 	weights = ((FCLayer*) net->layers[6])->getWeights();
+	// 	biases  = ((FCLayer*) net->layers[6])->getBias();
+	// 	cout << "6 (FCLayer) weights: ";
+	// 	print_vec(*weights);
+	// 	cout << "6 (FCLayer) biases: ";
+	// 	print_vec(*biases);
 
-		// Layer 8
-		weights = ((FCLayer*) net->layers[8])->getWeights();
-		biases  = ((FCLayer*) net->layers[8])->getBias();
-		cout << "8 (FCLayer) weights: ";
-		print_vec(*weights);
-		cout << "8 (FCLayer) biases: ";
-		print_vec(*biases);
-	}
+	// 	// Layer 8
+	// 	weights = ((FCLayer*) net->layers[8])->getWeights();
+	// 	biases  = ((FCLayer*) net->layers[8])->getBias();
+	// 	cout << "8 (FCLayer) weights: ";
+	// 	print_vec(*weights);
+	// 	cout << "8 (FCLayer) biases: ";
+	// 	print_vec(*biases);
+	// }
 
 	start_m();
 	//Run unit tests in two modes: 
@@ -151,15 +151,15 @@ int main(int argc, char** argv)
 	// Finally, show the accuracy and junk
 	if (dataset.compare("MNIST") == 0) {
 		// I don't know the actual image sizes, just that the total should be 784...
-		net->collectMetrics(784, 1, 1);
+		net->collectMetrics(MINI_BATCH_SIZE, 784, 1, 1);
 	} else if (network.compare("AlexNet") == 0 && dataset.compare("CIFAR10") == 0) {
-		net->collectMetrics(33, 33, 3);
+		net->collectMetrics(MINI_BATCH_SIZE, 33, 33, 3);
 	} else if (network.compare("AlexNet") == 0 && dataset.compare("ImageNet") == 0) {
-		net->collectMetrics(56, 56, 3);
+		net->collectMetrics(MINI_BATCH_SIZE, 56, 56, 3);
 	} else if (network.compare("VGG16") == 0 && dataset.compare("CIFAR10") == 0) {
-		net->collectMetrics(32, 32, 3);
+		net->collectMetrics(MINI_BATCH_SIZE, 32, 32, 3);
 	} else if (network.compare("VGG16") == 0 && dataset.compare("ImageNet") == 0) {
-		net->collectMetrics(64, 64, 3);
+		net->collectMetrics(MINI_BATCH_SIZE, 64, 64, 3);
 	} else {
 		cerr << "Encountered unknown neural network / dataset combination '" << network << "' / '" << dataset << '\'' << endl;
 		return 1;

@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:41:23
  * Last edited:
- *   18 Jan 2023, 13:50:11
+ *   18 Jan 2023, 17:15:08
  * Auto updated?
  *   Yes
  *
@@ -38,18 +38,56 @@ extern size_t LAST_LAYER_SIZE;
 
 
 /***** HELPER FUNCTIONS *****/
-/* Prints the header of the confusion matrix.
+/* Prints the label on top of the confusion matrix.
  * 
  * # Arguments
  * - `largest_cell_size`: The size (in number of digits) of the largest value in any of the cells.
  * 
  * # Returns
+ * Nothing but does write it to stdout with proper formatting.
+ */
+void print_confusion_matrix_top_label(size_t largest_cell_size) {
+	// Compute the total width
+	size_t width = 1 + (1 + LAST_LAYER_SIZE) * (3 + largest_cell_size);
+
+	// The width of the label is in the middle
+	cout << "  " << string(width / 2 - 8, ' ') << "Predicted labels" << endl;
+}
+
+/* Prints a character of the vertical label or a space if not yet.
+ *
+ * # Arguments
+ * - `y`: The current physical row number, zero-indexed.
+ * 
+ * # Returns
+ * Either the character of the string or a space (`' '`).
+ */
+char confusion_matrix_side_label(size_t y) {
+	// Compute the total height
+	size_t height = 1 + (2 * (1 + LAST_LAYER_SIZE));
+
+	// Return the character if it is in the range
+	const char* text = "Ground truth";
+	if (y >= (height / 2 - 6) && y < (height / 2 + 6)) {
+		return text[y - (height / 2 - 6)];
+	} else {
+		return ' ';
+	}
+}
+
+/* Prints the header of the confusion matrix.
+ * 
+ * # Arguments
+ * - `y`: The current row number (zero-indexed).
+ * - `largest_cell_size`: The size (in number of digits) of the largest value in any of the cells.
+ * 
+ * # Returns
  * Nothing, but does write it to stdout with proper formatting.
  */
-void print_confusion_matrix_header(size_t largest_cell_size) {
+void print_confusion_matrix_header(size_t y, size_t largest_cell_size) {
 	// Print the empty cell
 	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
-	cout << " | " << std::string(largest_class_size, ' ');
+	cout << ' ' << confusion_matrix_side_label(y) << "| " << std::string(largest_class_size, ' ');
 
 	// Next, print all of the classes
 	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
@@ -72,10 +110,10 @@ void print_confusion_matrix_header(size_t largest_cell_size) {
  * # Returns
  * Nothing, but does write it to stdout with proper formatting.
  */
-void print_confusion_matrix_row(int* confusion_row, int class_number, size_t largest_cell_size) {
+void print_confusion_matrix_row(size_t y, int* confusion_row, int class_number, size_t largest_cell_size) {
 	// Print the class first
 	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
-	cout << " | " << std::string(largest_class_size - N_LENGTH(class_number), ' ') << class_number;
+	cout << ' ' << confusion_matrix_side_label(y) << "| " << std::string(largest_class_size - N_LENGTH(class_number), ' ') << class_number;
 
 	// Next, print all of the cells
 	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
@@ -98,10 +136,10 @@ void print_confusion_matrix_row(int* confusion_row, int class_number, size_t lar
  * # Returns
  * Nothing, but does write it to stdout with proper formatting.
  */
-void print_confusion_matrix_row_lines(size_t largest_cell_size, const char* left, const char* middle, const char* right) {
+void print_confusion_matrix_row_lines(size_t y, size_t largest_cell_size, const char* left, const char* middle, const char* right) {
 	// Print the class cell
 	size_t largest_class_size = N_LENGTH(LAST_LAYER_SIZE);
-	cout << ' ' << left << '-' << std::string(largest_class_size, '-');
+	cout << ' ' << confusion_matrix_side_label(y) << left << '-' << std::string(largest_class_size, '-');
 
 	// Next, print all of the cells
 	for (int i = 0; i < LAST_LAYER_SIZE; i++) {
@@ -136,7 +174,7 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 				act = j;
 			}
 		}
-		if (act < 0) { cerr << "FATAL: No class in golden truth sample " << (i / LAST_LAYER_SIZE) << endl; exit(1); }
+		if (act < 0) { cerr << "FATAL: No class in golden truth sample " << (i / LAST_LAYER_SIZE) << endl; cout << " > Sample:"; for (size_t j = 0; j < LAST_LAYER_SIZE; j++) { cout << ' ' << actual[i + j]; }; cout << endl; exit(1); }
 		int pred = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
 			if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
@@ -144,10 +182,10 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 				pred = j;
 			}
 		}
-		if (pred < 0) { cerr << "FATAL: No class in predicted sample " << (i / LAST_LAYER_SIZE) << endl; exit(1); }
+		if (pred < 0) { cerr << "FATAL: No class in predicted sample " << (i / LAST_LAYER_SIZE) << endl; cout << " > Sample:"; for (size_t j = 0; j < LAST_LAYER_SIZE; j++) { cout << ' ' << predicted[i + j]; }; cout << endl; exit(1); }
 
 		// Populate the confusion matrix accordingly
-		confusion_matrix[pred * LAST_LAYER_SIZE + act] += 1;
+		confusion_matrix[act * LAST_LAYER_SIZE + pred] += 1;
 
 		// Keep track for the global accuracy
 		if (act == pred) { accuracy += 1; }
@@ -165,18 +203,18 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 	}
 	cout << "----------------------------------------------" << endl;
 	cout << "Confusion matrix:" << endl;
-	cout << "      Pred" << endl;
 	// Print the top lines
-	print_confusion_matrix_row_lines(longest_len, "┌", "┬", "┐");
+	print_confusion_matrix_top_label(longest_len);
+	print_confusion_matrix_row_lines(0, longest_len, "┌", "┬", "┐");
 	// Print the header
-	print_confusion_matrix_header(longest_len);
+	print_confusion_matrix_header(1, longest_len);
 	// Print the rows themselves
 	for (size_t y = 0; y < LAST_LAYER_SIZE; y++) {
-		print_confusion_matrix_row_lines(longest_len, "├", "┼", "┤");
-		print_confusion_matrix_row(confusion_matrix.data() + (y * LAST_LAYER_SIZE), y, longest_len);
+		print_confusion_matrix_row_lines(2 + 2 * y, longest_len, "├", "┼", "┤");
+		print_confusion_matrix_row(2 + 2 * y + 1, confusion_matrix.data() + (y * LAST_LAYER_SIZE), y, longest_len);
 	}
 	// Print the bottom lines
-	print_confusion_matrix_row_lines(longest_len, "└", "┴", "┘");
+	print_confusion_matrix_row_lines(2 + (2 * LAST_LAYER_SIZE), longest_len, "└", "┴", "┘");
 	cout << "----------------------------------------------" << endl;
 
 	// Print the global metrics
@@ -197,16 +235,16 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 				// True negatives are all the cells that do not have anything to do as this class (i.e., were not this class and not predicted as such)
 				if (x != clss && y != clss) { tn += n; }
 				// False positives are all the cells predicted as this class that were not in fact this class
-				if (x != clss && y == clss) { fp += n; }
+				if (x == clss && y != clss) { fp += n; }
 				// Finally, false negatives are all the cells predicted as not this class that in fact were
-				if (x == clss && y != clss) { fn += n; }
+				if (x != clss && y == clss) { fn += n; }
 			}
 		}
 
 		// Compute the metrics from this matrix
 		double accuracy  = ((double) (tp + tn)) / ((double) (tp + tn + fp + fn));
-		double precision = tp > 0 ? ((double) tp) / ((double) (tp + fp)) : 0;
-		double recall    = tp > 0 ? ((double) tp) / ((double) (tp + fn)) : 0;
+		double precision = ((double) tp) / ((double) (tp + fp));
+		double recall    = ((double) tp) / ((double) (tp + fn));
 		double f1        = precision * recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
 
 		// Print them

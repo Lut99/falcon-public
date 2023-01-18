@@ -16,7 +16,6 @@ extern size_t INPUT_SIZE;
 extern size_t LAST_LAYER_SIZE;
 extern bool WITH_NORMALIZATION;
 extern bool LARGE_NETWORK;
-extern RSSVectorMyType testData, testLabels;
 
 
 /***** NEURALNETWORK CLASS *****/
@@ -237,61 +236,56 @@ void NeuralNetwork::getAccuracy(const RSSVectorMyType &maxIndex, vector<size_t> 
  * # Returns
  * Nothing directly, but does print the metrics to `stdout` in a table-like fashion.
  */
-void NeuralNetwork::collectMetrics(size_t width, size_t height, size_t depth) {
+void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height, size_t depth) {
 	log_print("NN.getMetrics");
 
-	// Truncate the test labels such that the 
+	// Get the old data somewhere so we can collect the metrics using custom data
+	RSSVectorMyType old_input  = this->inputData;
+	RSSVectorMyType old_output = this->outputData;
 
-	// Set the input data as the test data
-	RSSVectorMyType old_data = this->inputData;
-	// this->inputData = test_data;
-	readMiniBatch(this, "TESTING", testData.size() / (width * height * depth));
-	// printNetwork(this);
-
-	// Do a forward pass to compute the activations
-	this->forward();
-
-	// Reconstruct the prediction of the neural network, using the functions as presented in `NeuralNetwork::getAccuracy()`.
-	size_t rows = testLabels.size() / LAST_LAYER_SIZE;
+	// Do the number of batches
+	size_t rows    = MINI_BATCH_SIZE;
 	size_t columns = LAST_LAYER_SIZE;
+	vector<float> groundTruth_float(n_samples*columns);
+	vector<float> prediction_float(n_samples*columns);
+	assert(n_samples % MINI_BATCH_SIZE == 0 && "The given number of samples must be a multiple of the MINI_BATCH_SIZE");
+	for (size_t i = 0; i < n_samples / MINI_BATCH_SIZE; i++) {
+		// Get the next test batch
+		readMiniBatch(this, "TESTING");
+		// printNetwork(this);
 
-	RSSVectorMyType max(rows);
-	RSSVectorSmallType maxPrime(rows*columns);
-	RSSVectorMyType temp_max(rows), temp_groundTruth(rows);
-	RSSVectorSmallType temp_maxPrime(rows*columns);
+		// Do a forward pass to compute the activations
+		this->forward();
 
-	vector<smallType> groundTruth(rows*columns);
-	vector<smallType> prediction(rows*columns);
+		// Reconstruct the prediction of the neural network, using the functions as presented in `NeuralNetwork::getAccuracy()`.
+		RSSVectorMyType max(rows);
+		RSSVectorSmallType maxPrime(rows*columns);
+		RSSVectorMyType temp_max(rows), temp_groundTruth(rows);
+		RSSVectorSmallType temp_maxPrime(rows*columns);
 
-	// reconstruct ground truth from output data
-	// funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
-	// print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+		vector<myType> groundTruth(rows*columns);
+		vector<smallType> prediction(rows*columns);
+		
+		// reconstruct ground truth from output data
+		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
+		
+		// reconstruct prediction from neural network
+		funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
+		funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
 
-	// Reconstruct the ground truth from the testLabels
-	for (size_t i = 0; i < testLabels.size(); i++) {
-		groundTruth[i] = ((float) testLabels[i].second) / (1 << FLOAT_PRECISION);
+		// Cast both to floats
+		for (size_t i = 0; i < (rows*columns); i++) {
+			groundTruth_float[i] = ((float) groundTruth[i]) / (1 << FLOAT_PRECISION);
+			prediction_float[i]  = (float) prediction[i];
+		}
 	}
-	
-	// reconstruct prediction from neural network
-	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
-	funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
 
-	// Cast both to floats
-	vector<float> groudTruth_float(rows*columns);
-	vector<float> prediction_float(rows*columns);
-	for (size_t i = 0; i < (rows*columns); i++) {
-		groudTruth_float[i] = (float) groundTruth[i];
-		prediction_float[i] = (float) prediction[i];
-	}
-
-	// Put the rest into the global function
-	printMetrics(groudTruth_float, prediction_float);
+	// Now print the metrics over the entire thing
+	printMetrics(groundTruth_float, prediction_float);
 
 	// Finally, restore the old data
-	this->inputData = old_data;
-	for (size_t i = 0; i < this->layers.size(); i++) {
-		this->layers[i]->setInputRows(MINI_BATCH_SIZE);
-	}
+	this->inputData  = old_input;
+	this->outputData = old_output;
 
 	// Done
 }
