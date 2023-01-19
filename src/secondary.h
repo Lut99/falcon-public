@@ -13,7 +13,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net);
 // void generate_zeros(string name, size_t number, string network);
 void preload_network(bool PRELOADING, string network, NeuralNetwork* net);
 void loadData(string net, string dataset);
-void readMiniBatch(NeuralNetwork* net, string phase, size_t batch_size);
+void readMiniBatch(NeuralNetwork* net, string phase);
 void printNetwork(NeuralNetwork* net);
 void selectNetwork(string network, string dataset, string security, NeuralNetConfig* config);
 void runOnly(NeuralNetwork* net, size_t l, string what, string& network);
