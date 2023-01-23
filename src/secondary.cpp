@@ -52,6 +52,7 @@ extern void funcReconstruct(const RSSVectorMyType &a, vector<myType> &b, size_t 
 	ifstream NAME(PATH); if (!NAME.is_open()) { cerr << NUM << ": Failed to load dataset '" << PATH << "': " << strerror(errno) << endl; }
 
 
+
 /******************* Main train and test functions *******************/
 void parseInputs(int argc, char* argv[])
 {	
@@ -139,6 +140,105 @@ void generate_zeros(string name, size_t number, string network)
 extern size_t nextParty(size_t party);
 #include "FCLayer.h"
 #include "CNNLayer.h"
+
+
+
+/***** HELPER FUNCTIONS *****/
+// Loads the input for a given layer.
+void load_input(NeuralNetwork* net, string net_name, string path, const bool ZEROS) {
+	string path_input_1 = path+"input_"+to_string(partyNum);
+	string path_input_2 = path+"input_"+to_string(nextParty(partyNum));
+	ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+	if (!f_input_1.is_open()) { cerr << "Failed to open preload input file '" << path_input_1 << "': " << strerror(errno) << endl; }
+	if (!f_input_2.is_open()) { cerr << "Failed to open preload input file '" << path_input_2 << "': " << strerror(errno) << endl; }
+
+	float temp_next = 0, temp_prev = 0;
+	for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+	{
+		f_input_1 >> temp_next; f_input_2 >> temp_prev;
+		net->inputData.at(i) = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+	}
+	f_input_1.close(); f_input_2.close();
+	if (ZEROS)
+	{
+		generate_zeros("input_1", INPUT_SIZE * MINI_BATCH_SIZE, net_name);
+		generate_zeros("input_2", INPUT_SIZE * MINI_BATCH_SIZE, net_name);
+	}
+}
+
+/* Loads both the weights and the biases for the given layer.
+ * 
+ * The sizes for each operation (i.e., the number of numbers in a weight matrix) are automatically deduced based on the size of the `weights` array in the respective layer.
+ * 
+ * # Arguments
+ * - `net`: The NeuralNetwork to put the loaded weights and biases in.
+ * - `net_name`: The name of the network. Only used when `ZEROS` is set to `true`.
+ * - `path`: The path of the folder where we can find the pretrained weights/biases file(s).
+ * - `file_n`: The index of the file. This is essentially the "meta layer", i.e., the layer index without stuff like ReLU or Maxpool layers
+ * - `layer`: The index of the layer in the NeuralNetwork `net`. This is _with_ all the stuff like ReLU or Maxpool layers.
+ * - `ZEROS`: A constant that enables the generation of empty ZEROS files. Recommended to set to true at least once per fresh set of weights, lest errors follow.
+ * 
+ * # Returns
+ * Nothing directly, but changes the given `net` to populate the vector returned by `layer::getWeights()` and `layer::getBiases()`.
+ */
+template<class LAYER> void load_layer(NeuralNetwork* net, const string& net_name, const string& path, size_t file_n, size_t layer, const bool ZEROS) {
+	// Fetch the weights & biases sizes
+	LAYER* layer = (LAYER*) net->layers[layer];
+	size_t weights_size = layer->getWeights()->size();
+	size_t biases_size  = layer->getBiases()->size();
+
+	// Load the weights
+	load_weights<LAYER>(net, net_name, path, file_n, layer, weights_size, ZEROS);
+	// Load the biases
+	load_biases<LAYER>(net, net_name, path, file_n, layer, biases_size, ZEROS);
+}
+
+// Loads the weights for a given layer.
+template<class LAYER> void load_weights(NeuralNetwork* net, string net_name, string path, size_t file_n, size_t layer, size_t size, const bool ZEROS) {
+	string path_weight1_1 = path+"weight"+to_string(file_n)+"_"+to_string(partyNum);
+	string path_weight1_2 = path+"weight"+to_string(file_n)+"_"+to_string(nextParty(partyNum));
+	ifstream f_weight1_1(path_weight1_1), f_weight1_2(path_weight1_2);
+	if (!f_weight1_1.is_open()) { cerr << "Failed to open preload weights file '" << path_weight1_1 << "' for layer " << layer << ": " << strerror(errno) << endl; }
+	if (!f_weight1_2.is_open()) { cerr << "Failed to open preload weights file '" << path_weight1_2 << "' for layer " << layer << ": " << strerror(errno) << endl; }
+
+	float temp_next = 0, temp_prev = 0;
+	for (int i = 0; i < size; ++i)
+	{
+		f_weight1_1 >> temp_next; f_weight1_2 >> temp_prev;
+		(*((LAYER*)net->layers.at(layer))->getWeights()).at(i) = 
+				std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+	}
+	f_weight1_1.close(); f_weight1_2.close();
+	if (ZEROS)
+	{
+		generate_zeros("weight"+to_string(file_n)+"_1", size, net_name);
+		generate_zeros("weight"+to_string(file_n)+"_2", size, net_name);
+	}
+}
+
+// Loads the biases for a given layer.
+template<class LAYER> void load_biases(NeuralNetwork* net, string net_name, string path, size_t file_n, size_t layer, size_t size, const bool ZEROS) {
+	string path_bias1_1 = path+"bias"+to_string(file_n)+"_"+to_string(partyNum);
+	string path_bias1_2 = path+"bias"+to_string(file_n)+"_"+to_string(nextParty(partyNum));
+	ifstream f_bias1_1(path_bias1_1), f_bias1_2(path_bias1_2);
+	if (!f_bias1_1.is_open()) { cerr << "Failed to open preload bias file '" << path_bias1_1 << "' for layer " << layer << ": " << strerror(errno) << endl; }
+	if (!f_bias1_2.is_open()) { cerr << "Failed to open preload bias file '" << path_bias1_2 << "' for layer " << layer << ": " << strerror(errno) << endl; }
+
+	float temp_next = 0, temp_prev = 0;
+	for (int i = 0; i < size; ++i)
+	{
+		f_bias1_1 >> temp_next; f_bias1_2 >> temp_prev;
+		(*((LAYER*)net->layers.at(layer))->getBias()).at(i) = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+	}
+	f_bias1_1.close(); f_bias1_2.close();
+	if (ZEROS)
+	{
+		generate_zeros("bias"+to_string(file_n)+"_1", size, net_name);
+		generate_zeros("bias"+to_string(file_n)+"_2", size, net_name);
+	}
+}
+
+
 void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 {
 	log_print("preload_network");
@@ -147,7 +247,7 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 	float temp_next = 0, temp_prev = 0;
 	string default_path = "files/preload/"+which_network(network)+"/";
 	//Set to true if you want the zeros files generated.
-	bool ZEROS = true;
+	const bool ZEROS = true;
 
 	if (which_network(network).compare("SecureML") == 0)
 	{
@@ -599,189 +699,72 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 	{
 		string temp = "LeNet";
 		/************************** Input **********************************/
-		string path_input_1 = default_path+"input_"+to_string(partyNum);
-		string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
-		ifstream f_input_1(path_input_1), f_input_2(path_input_2);
-		if (!f_input_1.is_open()) { cerr << "Failed to open preload input file '" << path_input_1 << "': " << strerror(errno) << endl; }
-		if (!f_input_2.is_open()) { cerr << "Failed to open preload input file '" << path_input_2 << "': " << strerror(errno) << endl; }
-
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
-		{
-			f_input_1 >> temp_next; f_input_2 >> temp_prev;
-			net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_input_1.close(); f_input_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("input_1", 784*128, temp);
-			generate_zeros("input_2", 784*128, temp);
-		}
-
-		// print_vector(net->inputData, "FLOAT", "inputData:", 784);
+		load_input(net, temp, default_path, ZEROS);
 
 		/************************** Weight1 **********************************/
-		string path_weight1_1 = default_path+"weight1_"+to_string(partyNum);
-		string path_weight1_2 = default_path+"weight1_"+to_string(nextParty(partyNum));
-		ifstream f_weight1_1(path_weight1_1), f_weight1_2(path_weight1_2);
-		if (!f_weight1_1.is_open()) { cerr << "Failed to open preload weights file 1 '" << path_weight1_1 << "': " << strerror(errno) << endl; }
-		if (!f_weight1_2.is_open()) { cerr << "Failed to open preload weights file 1 '" << path_weight1_2 << "': " << strerror(errno) << endl; }
-
-		for (int row = 0; row < 5*5*1*20; ++row)
-		{
-			f_weight1_1 >> temp_next; f_weight1_2 >> temp_prev;
-			(*((CNNLayer*)net->layers[0])->getWeights())[row] = 
-					std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_weight1_1.close(); f_weight1_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("weight1_1", 5*5*1*20, temp);
-			generate_zeros("weight1_2", 5*5*1*20, temp);
-		}
+		load_weights<CNNLayer>(net, temp, default_path, 1, 0, 5*5*1*20, ZEROS);
 
 		/************************** Weight2 **********************************/
-		string path_weight2_1 = default_path+"weight2_"+to_string(partyNum);
-		string path_weight2_2 = default_path+"weight2_"+to_string(nextParty(partyNum));
-		ifstream f_weight2_1(path_weight2_1), f_weight2_2(path_weight2_2);
-		if (!f_weight2_1.is_open()) { cerr << "Failed to open preload weights file 2 '" << path_weight2_1 << "': " << strerror(errno) << endl; }
-		if (!f_weight2_2.is_open()) { cerr << "Failed to open preload weights file 2 '" << path_weight2_2 << "': " << strerror(errno) << endl; }
-
-
-		for (int row = 0; row < 25*20*50; ++row)
-		{
-			f_weight2_1 >> temp_next; f_weight2_2 >> temp_prev;
-			(*((CNNLayer*)net->layers[3])->getWeights())[row] = 
-					std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_weight2_1.close(); f_weight2_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("weight2_1", 5*5*20*50, temp);
-			generate_zeros("weight2_2", 5*5*20*50, temp);
-		}
+		load_weights<CNNLayer>(net, temp, default_path, 2, 3, 25*20*50, ZEROS);
 
 		/************************** Weight3 **********************************/
-		string path_weight3_1 = default_path+"weight3_"+to_string(partyNum);
-		string path_weight3_2 = default_path+"weight3_"+to_string(nextParty(partyNum));
-		ifstream f_weight3_1(path_weight3_1), f_weight3_2(path_weight3_2);
-		if (!f_weight3_1.is_open()) { cerr << "Failed to open preload weights file 3 '" << path_weight3_1 << "': " << strerror(errno) << endl; }
-		if (!f_weight3_2.is_open()) { cerr << "Failed to open preload weights file 3 '" << path_weight3_2 << "': " << strerror(errno) << endl; }
-
-		for (int column = 0; column < 500; ++column)
-		{
-			for (int row = 0; row < 800; ++row)
-			{
-				f_weight3_1 >> temp_next; f_weight3_2 >> temp_prev;
-				(*((FCLayer*)net->layers[6])->getWeights())[500*row + column] = 
-						std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-			}
-		}
-		f_weight3_1.close(); f_weight3_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("weight3_1", 800*500, temp);
-			generate_zeros("weight3_2", 800*500, temp);
-		}
-
+		load_weights<FCLayer>(net, temp, default_path, 3, 6, 500*800, ZEROS);
 
 		/************************** Weight4 **********************************/
-		string path_weight4_1 = default_path+"weight4_"+to_string(partyNum);
-		string path_weight4_2 = default_path+"weight4_"+to_string(nextParty(partyNum));
-		ifstream f_weight4_1(path_weight4_1), f_weight4_2(path_weight4_2);
-		if (!f_weight4_1.is_open()) { cerr << "Failed to open preload weights file 4 '" << path_weight4_1 << "': " << strerror(errno) << endl; }
-		if (!f_weight4_2.is_open()) { cerr << "Failed to open preload weights file 4 '" << path_weight4_2 << "': " << strerror(errno) << endl; }
-
-		for (int column = 0; column < 10; ++column)
-		{
-			for (int row = 0; row < 500; ++row)
-			{
-				f_weight4_1 >> temp_next; f_weight4_2 >> temp_prev;
-				(*((FCLayer*)net->layers[8])->getWeights())[10*row + column] = 
-						std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-			}
-		}
-		f_weight4_1.close(); f_weight4_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("weight4_1", 500*10, temp);
-			generate_zeros("weight4_2", 500*10, temp);
-		}
+		load_weights<FCLayer>(net, temp, default_path, 4, 8, 10*500, ZEROS);
 
 		/************************** Bias1 **********************************/
-		string path_bias1_1 = default_path+"bias1_"+to_string(partyNum);
-		string path_bias1_2 = default_path+"bias1_"+to_string(nextParty(partyNum));
-		ifstream f_bias1_1(path_bias1_1), f_bias1_2(path_bias1_2);
-		if (!f_bias1_1.is_open()) { cerr << "Failed to open preload bias file 1 '" << path_bias1_1 << "': " << strerror(errno) << endl; }
-		if (!f_bias1_2.is_open()) { cerr << "Failed to open preload bias file 1 '" << path_bias1_2 << "': " << strerror(errno) << endl; }
-
-		for (int i = 0; i < 20; ++i)
-		{
-			f_bias1_1 >> temp_next; f_bias1_2 >> temp_prev;
-			(*((CNNLayer*)net->layers[0])->getBias())[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_bias1_1.close(); f_bias1_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("bias1_1", 20, temp);
-			generate_zeros("bias1_2", 20, temp);
-		}
+		load_biases<CNNLayer>(net, temp, default_path, 1, 0, 20, ZEROS);
 
 		/************************** Bias2 **********************************/
-		string path_bias2_1 = default_path+"bias2_"+to_string(partyNum);
-		string path_bias2_2 = default_path+"bias2_"+to_string(nextParty(partyNum));
-		ifstream f_bias2_1(path_bias2_1), f_bias2_2(path_bias2_2);
-		if (!f_bias2_1.is_open()) { cerr << "Failed to open preload bias file 2 '" << path_bias2_1 << "': " << strerror(errno) << endl; }
-		if (!f_bias2_2.is_open()) { cerr << "Failed to open preload bias file 2 '" << path_bias2_2 << "': " << strerror(errno) << endl; }
-
-		for (int i = 0; i < 50; ++i)
-		{
-			f_bias2_1 >> temp_next; f_bias2_2 >> temp_prev;
-			(*((CNNLayer*)net->layers[3])->getBias())[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_bias2_1.close(); f_bias2_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("bias2_1", 50, temp);
-			generate_zeros("bias2_2", 50, temp);
-		}
+		load_biases<CNNLayer>(net, temp, default_path, 2, 3, 50, ZEROS);
 
 		/************************** Bias3 **********************************/
-		string path_bias3_1 = default_path+"bias3_"+to_string(partyNum);
-		string path_bias3_2 = default_path+"bias3_"+to_string(nextParty(partyNum));
-		ifstream f_bias3_1(path_bias3_1), f_bias3_2(path_bias3_2);
-		if (!f_bias3_1.is_open()) { cerr << "Failed to open preload bias file 3 '" << path_bias3_1 << "': " << strerror(errno) << endl; }
-		if (!f_bias3_2.is_open()) { cerr << "Failed to open preload bias file 3 '" << path_bias3_2 << "': " << strerror(errno) << endl; }
-
-		for (int i = 0; i < 500; ++i)
-		{
-			f_bias3_1 >> temp_next; f_bias3_2 >> temp_prev;
-			(*((FCLayer*)net->layers[6])->getBias())[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_bias3_1.close(); f_bias3_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("bias3_1", 500, temp);
-			generate_zeros("bias3_2", 500, temp);
-		}
+		load_biases<FCLayer>(net, temp, default_path, 3, 6, 500, ZEROS);
 
 		/************************** Bias4 **********************************/
-		string path_bias4_1 = default_path+"bias4_"+to_string(partyNum);
-		string path_bias4_2 = default_path+"bias4_"+to_string(nextParty(partyNum));
-		ifstream f_bias4_1(path_bias4_1), f_bias4_2(path_bias4_2);
-		if (!f_bias4_1.is_open()) { cerr << "Failed to open preload bias file 4 '" << path_bias4_1 << "': " << strerror(errno) << endl; }
-		if (!f_bias4_2.is_open()) { cerr << "Failed to open preload bias file 4 '" << path_bias4_2 << "': " << strerror(errno) << endl; }
+		load_biases<FCLayer>(net, temp, default_path, 4, 8, 10, ZEROS);
+	}
+	else if (which_network(network).compare("AlexNet") == 0)
+	{
+		string temp = "AlexNet";
+		/************************** Input **********************************/
+		load_input(net, temp, default_path, ZEROS);
 
-		for (int i = 0; i < 10; ++i)
-		{
-			f_bias4_1 >> temp_next; f_bias4_2 >> temp_prev;
-			(*((FCLayer*)net->layers[8])->getBias())[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_bias4_1.close(); f_bias4_2.close();
-		if (ZEROS)
-		{
-			generate_zeros("bias4_1", 10, temp);
-			generate_zeros("bias4_2", 10, temp);
-		}
+		// Determine any offsets for enabling BNLayers yay or nay
+		#ifndef DISABLE_BN_LAYER
+		const size_t bn_layer_size = 1;
+		#else
+		const size_t bn_layer_size = 0;
+		#endif
+
+		// Note: we use `layer_i` below to compute the index of the layers in the config. This is literally the zero-indexed position of the layer in the definition in `selectNetwork`, except that we dynamically take into account whether BNLayers are enabled or not.
+
+		/* Layer 1 */
+		size_t layer_i = 0;
+		load_layer<CNNLayer>(net, temp, default_path, 1, layer_i, ZEROS);
+		/* Layer 2 */
+		layer_i += 3 + bn_layer_size;
+		load_layer<CNNLayer>(net, temp, default_path, 2, layer_i, ZEROS);
+		/* Layer 3 */
+		layer_i += 3 + bn_layer_size;
+		load_layer<CNNLayer>(net, temp, default_path, 3, layer_i, ZEROS);
+		/* Layer 4 */
+		layer_i += 2;
+		load_layer<CNNLayer>(net, temp, default_path, 4, layer_i, ZEROS);
+		/* Layer 5 */
+		layer_i += 2;
+		load_layer<CNNLayer>(net, temp, default_path, 5, layer_i, ZEROS);
+
+		/* Layer 6 */
+		layer_i += 2;
+		load_layer<FCLayer>(net, temp, default_path, 6, layer_i, ZEROS);
+		/* Layer 7 */
+		layer_i += 2;
+		load_layer<FCLayer>(net, temp, default_path, 7, layer_i, ZEROS);
+		/* Layer 8 */
+		layer_i += 2;
+		load_layer<FCLayer>(net, temp, default_path, 8, layer_i, ZEROS);
 	}
 	else 
 		error("Preloading network error");
@@ -856,7 +839,7 @@ void loadData(string net, string dataset)
 	string filename_test_data_next, filename_test_data_prev;
 	string filename_train_labels_next, filename_train_labels_prev;
 	string filename_test_labels_next, filename_test_labels_prev;
-	
+
 	// modified to let each party holding a share of data
 	char* party_num = NULL;
 	if (partyNum == PARTY_A)
@@ -1173,12 +1156,16 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			CNNConfig* l0 = new CNNConfig(28,28,1,96,11,1,5,MINI_BATCH_SIZE);
 			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
 			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);		
+			#ifndef DISABLE_BN_LAYER
 			BNConfig * l3 = new BNConfig(5*5*96,MINI_BATCH_SIZE);
+			#endif
 
 			CNNConfig* l4 = new CNNConfig(5,5,96,256,5,1,1,MINI_BATCH_SIZE);
 			MaxpoolConfig* l5 = new MaxpoolConfig(3,3,256,3,2,MINI_BATCH_SIZE);
 			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);		
+			#ifndef DISABLE_BN_LAYER
 			BNConfig * l7 = new BNConfig(1*1*256,MINI_BATCH_SIZE);
+			#endif
 
 			CNNConfig* l8 = new CNNConfig(1,1,256,384,3,1,1,MINI_BATCH_SIZE);
 			ReLUConfig* l9 = new ReLUConfig(1*1*384,MINI_BATCH_SIZE);
@@ -1196,11 +1183,15 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			config->addLayer(l0);
 			config->addLayer(l1);
 			config->addLayer(l2);
+			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l3);
+			#endif
 			config->addLayer(l4);
 			config->addLayer(l5);
 			config->addLayer(l6);
+			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l7);
+			#endif
 			config->addLayer(l8);
 			config->addLayer(l9);
 			config->addLayer(l10);

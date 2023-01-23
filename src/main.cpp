@@ -137,7 +137,9 @@ int main(int argc, char** argv)
 
 	//Run inference (possibly with preloading a network)
 	// network += " test";
+	#ifdef PRELOAD_NETWORK
 	test(true, network, net);
+	#endif
 
 	end_m(network);
 	cout << "----------------------------------------------" << endl;  	

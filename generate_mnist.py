@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   22 Dec 2022, 14:40:33
+#   23 Jan 2023, 13:39:04
 # Auto updated?
 #   Yes
 #
@@ -21,32 +21,55 @@ from keras.datasets import mnist
 
 
 ##### MAIN #####
-def main(output_dir):
+def main(output_dir: str, homogeneous: bool) -> int:
     # Load the MNIST datraset
     (train_imgs, train_lbls), (test_imgs, test_lbls) = mnist.load_data()
 
     # Split it into three parts for three parties
-    train_imgs = {
-        "A" : train_imgs[     :20000],
-        "B" : train_imgs[20000:40000],
-        "C" : train_imgs[40000:],
-    }
-    train_lbls = {
-        "A" : train_lbls[     :20000],
-        "B" : train_lbls[20000:40000],
-        "C" : train_lbls[40000:],
-    }
+    if not homogeneous:
+        train_imgs = {
+            "A" : train_imgs[     :20000],
+            "B" : train_imgs[20000:40000],
+            "C" : train_imgs[40000:],
+        }
+        train_lbls = {
+            "A" : train_lbls[     :20000],
+            "B" : train_lbls[20000:40000],
+            "C" : train_lbls[40000:],
+        }
 
-    test_imgs = {
-        "A" : test_imgs[    :3333],
-        "B" : test_imgs[3333:6667],
-        "C" : test_imgs[6667:],
-    }
-    test_lbls = {
-        "A" : test_lbls[    :3333],
-        "B" : test_lbls[3333:6667],
-        "C" : test_lbls[6667:],
-    }
+        test_imgs = {
+            "A" : test_imgs[    :3333],
+            "B" : test_imgs[3333:6667],
+            "C" : test_imgs[6667:],
+        }
+        test_lbls = {
+            "A" : test_lbls[    :3333],
+            "B" : test_lbls[3333:6667],
+            "C" : test_lbls[6667:],
+        }
+    else:
+        train_imgs = {
+            "A" : train_imgs,
+            "B" : train_imgs,
+            "C" : train_imgs,
+        }
+        train_lbls = {
+            "A" : train_lbls,
+            "B" : train_lbls,
+            "C" : train_lbls,
+        }
+
+        test_imgs = {
+            "A" : test_imgs,
+            "B" : test_imgs,
+            "C" : test_imgs,
+        }
+        test_lbls = {
+            "A" : test_lbls,
+            "B" : test_lbls,
+            "C" : test_lbls,
+        }
 
     # Write them to separate files
     for party in [ "A", "B", "C" ]:
@@ -92,9 +115,10 @@ if __name__ == "__main__":
     # Define the arguments to parse
     parser = argparse.ArgumentParser()
     parser.add_argument("OUTPUT_DIR", default="./files", help="The output directory to generate the files in. Will complain if it doesn't exist yet.")
+    parser.add_argument("-H", "--homogeneous", action="store_true", help="If given, does not split the dataset three times but rather copies it three times for every party.")
 
     # Parse 'em
     args = parser.parse_args()
 
     # Run the main function
-    exit(main(args.OUTPUT_DIR))
+    exit(main(args.OUTPUT_DIR, args.homogeneous))

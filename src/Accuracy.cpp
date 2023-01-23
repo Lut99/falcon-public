@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:41:23
  * Last edited:
- *   18 Jan 2023, 17:15:08
+ *   23 Jan 2023, 15:19:38
  * Auto updated?
  *   Yes
  *
@@ -166,11 +166,10 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 	double accuracy = 0.0;
 	double total    = 0.0;
 	for (size_t i = 0; i < actual.size(); i += LAST_LAYER_SIZE) {
-		// Compress the string of nodes to a single number (the class)
+		// Compress the string of output layer outputs to a single number (the class)
 		int act = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
 			if ((act < 0 && actual[i + j] > 0) || actual[i + j] > actual[i + act]) {
-				// if (act > -1) { cerr << "WARNING: Golden truth sample " << (i / LAST_LAYER_SIZE) << " has multiple output bits set (assuming last one)" << endl; }
 				act = j;
 			}
 		}
@@ -178,7 +177,6 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 		int pred = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
 			if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
-				// if (pred > -1) { cerr << "WARNING: Predicted sample " << (i / LAST_LAYER_SIZE) << " has multiple output bits set (assuming last one)" << endl; }
 				pred = j;
 			}
 		}
