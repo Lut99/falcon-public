@@ -166,33 +166,6 @@ void load_input(NeuralNetwork* net, string net_name, string path, const bool ZER
 	}
 }
 
-/* Loads both the weights and the biases for the given layer.
- * 
- * The sizes for each operation (i.e., the number of numbers in a weight matrix) are automatically deduced based on the size of the `weights` array in the respective layer.
- * 
- * # Arguments
- * - `net`: The NeuralNetwork to put the loaded weights and biases in.
- * - `net_name`: The name of the network. Only used when `ZEROS` is set to `true`.
- * - `path`: The path of the folder where we can find the pretrained weights/biases file(s).
- * - `file_n`: The index of the file. This is essentially the "meta layer", i.e., the layer index without stuff like ReLU or Maxpool layers
- * - `layer`: The index of the layer in the NeuralNetwork `net`. This is _with_ all the stuff like ReLU or Maxpool layers.
- * - `ZEROS`: A constant that enables the generation of empty ZEROS files. Recommended to set to true at least once per fresh set of weights, lest errors follow.
- * 
- * # Returns
- * Nothing directly, but changes the given `net` to populate the vector returned by `layer::getWeights()` and `layer::getBiases()`.
- */
-template<class LAYER> void load_layer(NeuralNetwork* net, const string& net_name, const string& path, size_t file_n, size_t layer, const bool ZEROS) {
-	// Fetch the weights & biases sizes
-	LAYER* layer = (LAYER*) net->layers[layer];
-	size_t weights_size = layer->getWeights()->size();
-	size_t biases_size  = layer->getBiases()->size();
-
-	// Load the weights
-	load_weights<LAYER>(net, net_name, path, file_n, layer, weights_size, ZEROS);
-	// Load the biases
-	load_biases<LAYER>(net, net_name, path, file_n, layer, biases_size, ZEROS);
-}
-
 // Loads the weights for a given layer.
 template<class LAYER> void load_weights(NeuralNetwork* net, string net_name, string path, size_t file_n, size_t layer, size_t size, const bool ZEROS) {
 	string path_weight1_1 = path+"weight"+to_string(file_n)+"_"+to_string(partyNum);
@@ -236,6 +209,33 @@ template<class LAYER> void load_biases(NeuralNetwork* net, string net_name, stri
 		generate_zeros("bias"+to_string(file_n)+"_1", size, net_name);
 		generate_zeros("bias"+to_string(file_n)+"_2", size, net_name);
 	}
+}
+
+/* Loads both the weights and the biases for the given layer.
+ * 
+ * The sizes for each operation (i.e., the number of numbers in a weight matrix) are automatically deduced based on the size of the `weights` array in the respective layer.
+ * 
+ * # Arguments
+ * - `net`: The NeuralNetwork to put the loaded weights and biases in.
+ * - `net_name`: The name of the network. Only used when `ZEROS` is set to `true`.
+ * - `path`: The path of the folder where we can find the pretrained weights/biases file(s).
+ * - `file_n`: The index of the file. This is essentially the "meta layer", i.e., the layer index without stuff like ReLU or Maxpool layers
+ * - `layer`: The index of the layer in the NeuralNetwork `net`. This is _with_ all the stuff like ReLU or Maxpool layers.
+ * - `ZEROS`: A constant that enables the generation of empty ZEROS files. Recommended to set to true at least once per fresh set of weights, lest errors follow.
+ * 
+ * # Returns
+ * Nothing directly, but changes the given `net` to populate the vector returned by `layer::getWeights()` and `layer::getBiases()`.
+ */
+template<class LAYER> void load_layer(NeuralNetwork* net, const string& net_name, const string& path, size_t file_n, size_t layer, const bool ZEROS) {
+	// Fetch the weights & biases sizes
+	LAYER* layer_ptr    = (LAYER*) net->layers[layer];
+	size_t weights_size = layer_ptr->getWeights()->size();
+	size_t biases_size  = layer_ptr->getBias()->size();
+
+	// Load the weights
+	load_weights<LAYER>(net, net_name, path, file_n, layer, weights_size, ZEROS);
+	// Load the biases
+	load_biases<LAYER>(net, net_name, path, file_n, layer, biases_size, ZEROS);
 }
 
 
@@ -1155,17 +1155,13 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			WITH_NORMALIZATION = false;
 			CNNConfig* l0 = new CNNConfig(28,28,1,96,11,1,5,MINI_BATCH_SIZE);
 			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
-			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);		
-			#ifndef DISABLE_BN_LAYER
+			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);
 			BNConfig * l3 = new BNConfig(5*5*96,MINI_BATCH_SIZE);
-			#endif
 
 			CNNConfig* l4 = new CNNConfig(5,5,96,256,5,1,1,MINI_BATCH_SIZE);
 			MaxpoolConfig* l5 = new MaxpoolConfig(3,3,256,3,2,MINI_BATCH_SIZE);
-			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);		
-			#ifndef DISABLE_BN_LAYER
+			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);
 			BNConfig * l7 = new BNConfig(1*1*256,MINI_BATCH_SIZE);
-			#endif
 
 			CNNConfig* l8 = new CNNConfig(1,1,256,384,3,1,1,MINI_BATCH_SIZE);
 			ReLUConfig* l9 = new ReLUConfig(1*1*384,MINI_BATCH_SIZE);
@@ -1183,15 +1179,11 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			config->addLayer(l0);
 			config->addLayer(l1);
 			config->addLayer(l2);
-			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l3);
-			#endif
 			config->addLayer(l4);
 			config->addLayer(l5);
 			config->addLayer(l6);
-			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l7);
-			#endif
 			config->addLayer(l8);
 			config->addLayer(l9);
 			config->addLayer(l10);
@@ -1211,13 +1203,17 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			WITH_NORMALIZATION = false;
 			CNNConfig* l0 = new CNNConfig(33,33,3,96,11,4,9,MINI_BATCH_SIZE);
 			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
-			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);		
+			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);
+			#ifndef DISABLE_BN_LAYER
 			BNConfig * l3 = new BNConfig(5*5*96,MINI_BATCH_SIZE);
+			#endif
 
 			CNNConfig* l4 = new CNNConfig(5,5,96,256,5,1,1,MINI_BATCH_SIZE);
 			MaxpoolConfig* l5 = new MaxpoolConfig(3,3,256,3,2,MINI_BATCH_SIZE);
-			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);		
+			ReLUConfig* l6 = new ReLUConfig(1*1*256,MINI_BATCH_SIZE);
+			#ifndef DISABLE_BN_LAYER
 			BNConfig * l7 = new BNConfig(1*1*256,MINI_BATCH_SIZE);
+			#endif
 
 			CNNConfig* l8 = new CNNConfig(1,1,256,384,3,1,1,MINI_BATCH_SIZE);
 			ReLUConfig* l9 = new ReLUConfig(1*1*384,MINI_BATCH_SIZE);
@@ -1235,11 +1231,15 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			config->addLayer(l0);
 			config->addLayer(l1);
 			config->addLayer(l2);
+			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l3);
+			#endif
 			config->addLayer(l4);
 			config->addLayer(l5);
 			config->addLayer(l6);
+			#ifndef DISABLE_BN_LAYER
 			config->addLayer(l7);
+			#endif
 			config->addLayer(l8);
 			config->addLayer(l9);
 			config->addLayer(l10);
