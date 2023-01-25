@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:41:23
  * Last edited:
- *   23 Jan 2023, 15:19:38
+ *   25 Jan 2023, 17:15:26
  * Auto updated?
  *   Yes
  *
@@ -269,26 +269,26 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 	cout << endl;
 	cout << "Predicted labels (class):";
 	for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
-		// Compress the string of nodes to a single number (the class)
-		int clss = -1;
+		// Compress the string of output layer outputs to a single number (the class)
+		int pred = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
-			if (predicted[i + j] > 0.5) {
-				clss = j;
+			if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
+				pred = j;
 			}
 		}
-		cout << ' ' << clss;
+		cout << ' ' << pred;
 	}
 	cout << endl;
 	cout << "Ground truth (class):";
 	for (size_t i = 0; i < (actual.size() < (10 * LAST_LAYER_SIZE) ? actual.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
 		// Compress the string of nodes to a single number (the class)
-		int clss = -1;
+		int act = -1;
 		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
-			if (actual[i + j] > 0.5) {
-				clss = j;
+			if ((act < 0 && actual[i + j] > 0) || actual[i + j] > actual[i + act]) {
+				act = j;
 			}
 		}
-		cout << ' ' << clss;
+		cout << ' ' << act;
 	}
 	cout << endl;
 
