@@ -1198,8 +1198,12 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			config->addLayer(l19);
 
 		} else if (dataset.compare("CIFAR10") == 0) {
+			#ifndef DISABLE_BN_LAYER
 			NUM_LAYERS = 20;
-			// NUM_LAYERS = 18;		//Without BN
+			#else
+			NUM_LAYERS = 18;		//Without BN
+			#endif
+
 			WITH_NORMALIZATION = false;
 			CNNConfig* l0 = new CNNConfig(33,33,3,96,11,4,9,MINI_BATCH_SIZE);
 			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
