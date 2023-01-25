@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   24 Jan 2023, 17:04:29
+#   25 Jan 2023, 09:52:02
 # Auto updated?
 #   Yes
 #
@@ -91,9 +91,10 @@ def main(output_dir: str, homogeneous: bool) -> int:
                     for i in range(data.shape[0]):
                         # Generate width * height pixels...
                         for y in range(data.shape[1]):
-                            # ...with pixel pixels each
                             for x in range(data.shape[2]):
-                                h.write(f"{data[i, y, x]} ")
+                                # ...with pixel pixels each
+                                for p in range(data.shape[3]):
+                                    h.write(f"{data[i, y, x, p]} ")
             except IOError as e:
                 print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
                 return 1

@@ -918,27 +918,27 @@ void loadData(string net, string dataset)
 
 	// Open the training data
 	trainDataPrev = ifstream(filename_train_data_prev);
-	if (!trainDataPrev.is_open()) { cerr << party_num << ") Failed to open training dataset (prev) '" << filename_train_data_prev << "': " << strerror(errno) << endl; }
+	if (!trainDataPrev.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open training dataset (prev) '" + filename_train_data_prev + "': " + strerror(errno)); }
 	trainDataNext = ifstream(filename_train_data_next);
-	if (!trainDataNext.is_open()) { cerr << party_num << ") Failed to open training dataset (next) '" << filename_train_data_next << "': " << strerror(errno) << endl; }
+	if (!trainDataNext.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open training dataset (next) '" + filename_train_data_next + "': " + strerror(errno)); }
 
 	// Open the test data
 	testDataPrev = ifstream(filename_test_data_prev);
-	if (!testDataPrev.is_open()) { cerr << party_num << ") Failed to open test dataset (prev) '" << filename_train_data_prev << "': " << strerror(errno) << endl; }
+	if (!testDataPrev.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open test dataset (prev) '" + filename_test_data_prev + "': " + strerror(errno)); }
 	testDataNext = ifstream(filename_test_data_next);
-	if (!testDataNext.is_open()) { cerr << party_num << ") Failed to open test dataset (next) '" << filename_test_data_next << "': " << strerror(errno) << endl; }
+	if (!testDataNext.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open test dataset (next) '" + filename_test_data_next + "': " + strerror(errno)); }
 
 	// Open the training labels
 	trainLabelsPrev = ifstream(filename_train_labels_prev);
-	if (!trainLabelsPrev.is_open()) { cerr << party_num << ") Failed to open training labels (prev) '" << filename_train_labels_prev << "': " << strerror(errno) << endl; }
+	if (!trainLabelsPrev.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open training labels (prev) '" + filename_train_labels_prev + "': " + strerror(errno)); }
 	trainLabelsNext = ifstream(filename_train_labels_next);
-	if (!trainLabelsNext.is_open()) { cerr << party_num << ") Failed to open training labels (next) '" << filename_train_labels_next << "': " << strerror(errno) << endl; }
+	if (!trainLabelsNext.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open training labels (next) '" + filename_train_labels_next + "': " + strerror(errno)); }
 
 	// Open the test labels
 	testLabelsPrev = ifstream(filename_test_labels_prev);
-	if (!testLabelsPrev.is_open()) { cerr << party_num << ") Failed to open test labels (prev) '" << filename_test_labels_prev << "': " << strerror(errno) << endl; }
+	if (!testLabelsPrev.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open test labels (prev) '" + filename_test_labels_prev + "': " + strerror(errno)); }
 	testLabelsNext = ifstream(filename_test_labels_next);
-	if (!testLabelsNext.is_open()) { cerr << party_num << ") Failed to open test labels (next) '" << filename_test_labels_next << "': " << strerror(errno) << endl; }
+	if (!testLabelsNext.is_open()) { throw std::runtime_error(string(party_num) + ") Failed to open test labels (next) '" + filename_test_labels_next + "': " + strerror(errno)); }
 }
 
 
@@ -1006,18 +1006,18 @@ void readMiniBatch(NeuralNetwork* net, string phase)
 
 	// Read the next input batch
 	net->inputData.resize(INPUT_SIZE * MINI_BATCH_SIZE);
-	myType temp_prev, temp_next;
+	float temp_prev, temp_next;
 	for (size_t i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; i++) {
 		// Read the two next values from the files
 		if (!(dataPrev >> temp_prev)) {
 			// Re-try after seeking back to the start
 			dataPrev.seekg(streampos(0));
-			if (!dataPrev >> temp_prev) { cerr << "Failed to read next integer from " << phase << " data (prev): " << strerror(errno) << endl; }
+			if (!(dataPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " data (prev): " + strerror(errno)); }
 		}
 		if (!(dataNext >> temp_next)) {
 			// Re-try after seeking back to the start
 			dataNext.seekg(streampos(0));
-			if (!dataNext >> temp_next) { cerr << "Failed to read next integer from " << phase << " data (next): " << strerror(errno) << endl; }
+			if (!(dataNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " data (next): " + strerror(errno)); }
 		}
 
 		// Store them into the inputData
@@ -1031,12 +1031,12 @@ void readMiniBatch(NeuralNetwork* net, string phase)
 		if (!(labelsPrev >> temp_prev)) {
 			// Re-try after seeking back to the start
 			labelsPrev.seekg(streampos(0));
-			if (!labelsPrev >> temp_prev) { cerr << "Failed to read next integer from " << phase << " labels (prev): " << strerror(errno) << endl; }
+			if (!(labelsPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (prev): " + strerror(errno)); }
 		}
 		if (!(labelsNext >> temp_next)) {
 			// Re-try after seeking back to the start
 			labelsNext.seekg(streampos(0));
-			if (!labelsNext >> temp_next) { cerr << "Failed to read next integer from " << phase << " labels (next): " << strerror(errno) << endl; }
+			if (!(labelsNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (next): " + strerror(errno)); }
 		}
 
 		// Store them into the inputData
