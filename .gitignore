@@ -8,12 +8,7 @@
 # Ignore notebook checkpoints
 */.ipynb_checkpoints
 
-# Ignore the results
 output/
-
-# Ignore generates files
-files/train*
-files/test*
 
 # Debugger (valgrind, heaptrack) stuff
 vgcore.*

@@ -111,7 +111,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 	if (PRELOADING)
 	{
 		ofstream data_file;
-		data_file.open("files/preload/"+which_network(network)+"/"+which_network(network)+".txt");
+		data_file.open("files/preload/"+dataset+"/"+which_network(network)+"/"+which_network(network)+".txt");
 		
 		vector<myType> b(MINI_BATCH_SIZE * LAST_LAYER_SIZE);
 		funcReconstruct((*(net->layers[NUM_LAYERS-1])->getActivation()), b, MINI_BATCH_SIZE * LAST_LAYER_SIZE, "anything", false);
@@ -128,7 +128,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 // Generate a file with 0's of appropriate size
 void generate_zeros(string name, size_t number, string network)
 {
-	string default_path = "files/preload/"+which_network(network)+"/";
+	string default_path = "files/preload/"+dataset+"/"+which_network(network)+"/";
 	ofstream data_file;
 	data_file.open(default_path+name);
 
@@ -245,7 +245,7 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 	assert((PRELOADING) and (NUM_ITERATIONS == 1) and (MINI_BATCH_SIZE == 128) && "Preloading conditions fail");
 
 	float temp_next = 0, temp_prev = 0;
-	string default_path = "files/preload/"+which_network(network)+"/";
+	string default_path = "files/preload/"+dataset+"/"+which_network(network)+"/";
 	//Set to true if you want the zeros files generated.
 	const bool ZEROS = true;
 
@@ -801,8 +801,7 @@ void loadData(string net, string dataset)
 			TRAINING_DATA_SIZE = 8;
 			TEST_DATA_SIZE = 8;	
 		}
-		else
-			assert(false && "Only AlexNet and VGG16 supported on CIFAR10");
+
 	}
 	else if (dataset.compare("ImageNet") == 0)
 	{
@@ -845,36 +844,36 @@ void loadData(string net, string dataset)
 	if (partyNum == PARTY_A)
 	{
 		party_num = "A";
-		filename_train_data_next = "files/train_data_A";
-		filename_train_data_prev = "files/train_data_B";
-		filename_test_data_next = "files/test_data_A";
-		filename_test_data_prev = "files/test_data_B";
-		filename_train_labels_next = "files/train_labels_A";
-		filename_train_labels_prev = "files/train_labels_B";
-		filename_test_labels_next = "files/test_labels_A";
-		filename_test_labels_prev = "files/test_labels_B";
+		filename_train_data_next = "files/"+dataset+"/train_data_A";
+		filename_train_data_prev = "files/"+dataset+"/train_data_B";
+		filename_test_data_next = "files/"+dataset+"/test_data_A";
+		filename_test_data_prev = "files/"+dataset+"/test_data_B";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_A";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_B";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_A";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_B";
 	} else if (partyNum == PARTY_B)
 	{
 		party_num = "B";
-		filename_train_data_next = "files/train_data_B";
-		filename_train_data_prev = "files/train_data_C";
-		filename_test_data_next = "files/test_data_B";
-		filename_test_data_prev = "files/test_data_C";
-		filename_train_labels_next = "files/train_labels_B";
-		filename_train_labels_prev = "files/train_labels_C";
-		filename_test_labels_next = "files/test_labels_B";
-		filename_test_labels_prev = "files/test_labels_C";
+		filename_train_data_next = "files/"+dataset+"/train_data_B";
+		filename_train_data_prev = "files/"+dataset+"/train_data_C";
+		filename_test_data_next = "files/"+dataset+"/test_data_B";
+		filename_test_data_prev = "files/"+dataset+"/test_data_C";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_B";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_C";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_B";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_C";
 	} else if (partyNum == PARTY_C)
 	{
 		party_num = "C";
-		filename_train_data_next = "files/train_data_C";
-		filename_train_data_prev = "files/train_data_A";
-		filename_test_data_next = "files/test_data_C";
-		filename_test_data_prev = "files/test_data_A";
-		filename_train_labels_next = "files/train_labels_C";
-		filename_train_labels_prev = "files/train_labels_A";
-		filename_test_labels_next = "files/test_labels_C";
-		filename_test_labels_prev = "files/test_labels_A";
+		filename_train_data_next = "files/"+dataset+"/train_data_C";
+		filename_train_data_prev = "files/"+dataset+"/train_data_A";
+		filename_test_data_next = "files/"+dataset+"/test_data_C";
+		filename_test_data_prev = "files/"+dataset+"/test_data_A";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_C";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_A";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_C";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_A";
 	} else {
 		party_num = "<unknown party>";
 	}
@@ -1308,7 +1307,89 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 	else if (network.compare("VGG16") == 0)
 	{
 		if(dataset.compare("MNIST") == 0)
-			assert(false && "No VGG16 on MNIST");
+	{
+			NUM_LAYERS = 37;
+			WITH_NORMALIZATION = false;
+			CNNConfig* l0 = new CNNConfig(32,32,3,64,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l1 = new ReLUConfig(32*32*64,MINI_BATCH_SIZE);		
+			CNNConfig* l2 = new CNNConfig(32,32,64,64,3,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l3 = new MaxpoolConfig(32,32,64,2,2,MINI_BATCH_SIZE);
+			ReLUConfig* l4 = new ReLUConfig(16*16*64,MINI_BATCH_SIZE);
+
+			CNNConfig* l5 = new CNNConfig(16,16,64,128,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l6 = new ReLUConfig(16*16*128,MINI_BATCH_SIZE);
+			CNNConfig* l7 = new CNNConfig(16,16,128,128,3,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l8 = new MaxpoolConfig(16,16,128,2,2,MINI_BATCH_SIZE);
+			ReLUConfig* l9 = new ReLUConfig(8*8*128,MINI_BATCH_SIZE);
+
+			CNNConfig* l10 = new CNNConfig(8,8,128,256,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l11 = new ReLUConfig(8*8*256,MINI_BATCH_SIZE);
+			CNNConfig* l12 = new CNNConfig(8,8,256,256,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l13 = new ReLUConfig(8*8*256,MINI_BATCH_SIZE);
+			CNNConfig* l14 = new CNNConfig(8,8,256,256,3,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l15 = new MaxpoolConfig(8,8,256,2,2,MINI_BATCH_SIZE);
+			ReLUConfig* l16 = new ReLUConfig(4*4*256,MINI_BATCH_SIZE);
+
+			CNNConfig* l17 = new CNNConfig(4,4,256,512,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l18 = new ReLUConfig(4*4*512,MINI_BATCH_SIZE);
+			CNNConfig* l19 = new CNNConfig(4,4,512,512,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l20 = new ReLUConfig(4*4*512,MINI_BATCH_SIZE);
+			CNNConfig* l21 = new CNNConfig(4,4,512,512,3,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l22 = new MaxpoolConfig(4,4,512,2,2,MINI_BATCH_SIZE);
+			ReLUConfig* l23 = new ReLUConfig(2*2*512,MINI_BATCH_SIZE);
+
+			CNNConfig* l24 = new CNNConfig(2,2,512,512,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l25 = new ReLUConfig(2*2*512,MINI_BATCH_SIZE);
+			CNNConfig* l26 = new CNNConfig(2,2,512,512,3,1,1,MINI_BATCH_SIZE);
+			ReLUConfig* l27 = new ReLUConfig(2*2*512,MINI_BATCH_SIZE);
+			CNNConfig* l28 = new CNNConfig(2,2,512,512,3,1,1,MINI_BATCH_SIZE);
+			MaxpoolConfig* l29 = new MaxpoolConfig(2,2,512,2,2,MINI_BATCH_SIZE);
+			ReLUConfig* l30 = new ReLUConfig(1*1*512,MINI_BATCH_SIZE);
+
+			FCConfig* l31 = new FCConfig(1*1*512,MINI_BATCH_SIZE,4096);
+			ReLUConfig* l32 = new ReLUConfig(4096,MINI_BATCH_SIZE);
+			FCConfig* l33 = new FCConfig(4096, MINI_BATCH_SIZE, 4096);
+			ReLUConfig* l34 = new ReLUConfig(4096, MINI_BATCH_SIZE);
+			FCConfig* l35 = new FCConfig(4096, MINI_BATCH_SIZE, 1000);
+			ReLUConfig* l36 = new ReLUConfig(1000, MINI_BATCH_SIZE);
+			config->addLayer(l0);
+			config->addLayer(l1);
+			config->addLayer(l2);
+			config->addLayer(l3);
+			config->addLayer(l4);
+			config->addLayer(l5);
+			config->addLayer(l6);
+			config->addLayer(l7);
+			config->addLayer(l8);
+			config->addLayer(l9);
+			config->addLayer(l10);
+			config->addLayer(l11);
+			config->addLayer(l12);
+			config->addLayer(l13);
+			config->addLayer(l14);
+			config->addLayer(l15);
+			config->addLayer(l16);
+			config->addLayer(l17);
+			config->addLayer(l18);
+			config->addLayer(l19);
+			config->addLayer(l20);
+			config->addLayer(l21);
+			config->addLayer(l22);
+			config->addLayer(l23);
+			config->addLayer(l24);
+			config->addLayer(l25);
+			config->addLayer(l26);
+			config->addLayer(l27);
+			config->addLayer(l28);
+			config->addLayer(l29);
+			config->addLayer(l30);
+			config->addLayer(l31);
+			config->addLayer(l32);
+			config->addLayer(l33);
+			config->addLayer(l34);
+			config->addLayer(l35);
+			config->addLayer(l36);
+		}
 		else if (dataset.compare("CIFAR10") == 0)
 		{
 			NUM_LAYERS = 37;
