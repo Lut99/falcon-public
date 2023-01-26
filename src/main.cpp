@@ -43,8 +43,8 @@ int main(int argc, char** argv)
 	{network = argv[6]; dataset = argv[7]; security = argv[8];}
 	else
 	{
-		network = "LeNet";
-		dataset = "MNIST";
+		network = "AlexNet";
+		dataset = "CIFAR10";
 		security = "Semi-honest";
 	}
 
@@ -78,62 +78,10 @@ int main(int argc, char** argv)
 	#ifdef PRELOAD_NETWORK
 	preload_network(true, network, net);
 	#endif
-	// {
-	// 	RSSVectorMyType* weights;
-	// 	RSSVectorMyType* biases;
-
-	// 	// Layer 0
-	// 	weights = ((CNNLayer*) net->layers[0])->getWeights();
-	// 	biases  = ((CNNLayer*) net->layers[0])->getBias();
-	// 	cout << "0 (CNNLayer) weights: ";
-	// 	print_vec(*weights);
-	// 	cout << "0 (CNNLayer) biases: ";
-	// 	print_vec(*biases);
-
-	// 	// Layer 3
-	// 	weights = ((CNNLayer*) net->layers[3])->getWeights();
-	// 	biases  = ((CNNLayer*) net->layers[3])->getBias();
-	// 	cout << "3 (CNNLayer) weights: ";
-	// 	print_vec(*weights);
-	// 	cout << "3 (CNNLayer) biases: ";
-	// 	print_vec(*biases);
-
-	// 	// Layer 6
-	// 	weights = ((FCLayer*) net->layers[6])->getWeights();
-	// 	biases  = ((FCLayer*) net->layers[6])->getBias();
-	// 	cout << "6 (FCLayer) weights: ";
-	// 	print_vec(*weights);
-	// 	cout << "6 (FCLayer) biases: ";
-	// 	print_vec(*biases);
-
-	// 	// Layer 8
-	// 	weights = ((FCLayer*) net->layers[8])->getWeights();
-	// 	biases  = ((FCLayer*) net->layers[8])->getBias();
-	// 	cout << "8 (FCLayer) weights: ";
-	// 	print_vec(*weights);
-	// 	cout << "8 (FCLayer) biases: ";
-	// 	print_vec(*biases);
-	// }
+	
 
 	start_m();
-	//Run unit tests in two modes: 
-	//	1. Debug {Mat-Mul, DotProd, PC, Wrap, ReLUPrime, ReLU, Division, BN, SSBits, SS, and Maxpool}
-	//	2. Test {Mat-Mul1, Mat-Mul2, Mat-Mul3 (and similarly) Conv*, ReLU*, ReLUPrime*, and Maxpool*} where * = {1,2,3}
-	// runTest("Debug", "BN", network);
-	// runTest("Test", "ReLUPrime1", network);
 
-	// Run forward/backward for single layers
-	//  1. what {F, D, U}
-	// 	2. l {0,1,....NUM_LAYERS-1}
-	// size_t l = 0;
-	// string what = "F";
-	// runOnly(net, l, what, network);
-
-	//Run training if no preloading happened
-	#ifndef PRELOAD_NETWORK
-	// network += " train";
-	train(net);
-	#endif
 
 	//Run inference (possibly with preloading a network)
 	// network += " test";

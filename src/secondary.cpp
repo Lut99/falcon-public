@@ -111,7 +111,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 	if (PRELOADING)
 	{
 		ofstream data_file;
-		data_file.open("files/preload/"+which_network(network)+"/"+which_network(network)+".txt");
+		data_file.open("files/preload/"+dataset+"/"+which_network(network)+"/"+which_network(network)+".txt");
 		
 		vector<myType> b(MINI_BATCH_SIZE * LAST_LAYER_SIZE);
 		funcReconstruct((*(net->layers[NUM_LAYERS-1])->getActivation()), b, MINI_BATCH_SIZE * LAST_LAYER_SIZE, "anything", false);
@@ -128,7 +128,7 @@ void test(bool PRELOADING, string network, NeuralNetwork* net)
 // Generate a file with 0's of appropriate size
 void generate_zeros(string name, size_t number, string network)
 {
-	string default_path = "files/preload/"+which_network(network)+"/";
+	string default_path = "files/preload/"+dataset+"/"+which_network(network)+"/";
 	ofstream data_file;
 	data_file.open(default_path+name);
 
@@ -245,7 +245,7 @@ void preload_network(bool PRELOADING, string network, NeuralNetwork* net)
 	assert((PRELOADING) and (NUM_ITERATIONS == 1) and (MINI_BATCH_SIZE == 128) && "Preloading conditions fail");
 
 	float temp_next = 0, temp_prev = 0;
-	string default_path = "files/preload/"+which_network(network)+"/";
+	string default_path = "files/preload/"+dataset+"/"+which_network(network)+"/";
 	//Set to true if you want the zeros files generated.
 	const bool ZEROS = true;
 
@@ -845,36 +845,36 @@ void loadData(string net, string dataset)
 	if (partyNum == PARTY_A)
 	{
 		party_num = "A";
-		filename_train_data_next = "files/train_data_A";
-		filename_train_data_prev = "files/train_data_B";
-		filename_test_data_next = "files/test_data_A";
-		filename_test_data_prev = "files/test_data_B";
-		filename_train_labels_next = "files/train_labels_A";
-		filename_train_labels_prev = "files/train_labels_B";
-		filename_test_labels_next = "files/test_labels_A";
-		filename_test_labels_prev = "files/test_labels_B";
+		filename_train_data_next = "files/"+dataset+"/train_data_A";
+		filename_train_data_prev = "files/"+dataset+"/train_data_B";
+		filename_test_data_next = "files/"+dataset+"/test_data_A";
+		filename_test_data_prev = "files/"+dataset+"/test_data_B";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_A";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_B";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_A";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_B";
 	} else if (partyNum == PARTY_B)
 	{
 		party_num = "B";
-		filename_train_data_next = "files/train_data_B";
-		filename_train_data_prev = "files/train_data_C";
-		filename_test_data_next = "files/test_data_B";
-		filename_test_data_prev = "files/test_data_C";
-		filename_train_labels_next = "files/train_labels_B";
-		filename_train_labels_prev = "files/train_labels_C";
-		filename_test_labels_next = "files/test_labels_B";
-		filename_test_labels_prev = "files/test_labels_C";
+		filename_train_data_next = "files/"+dataset+"/train_data_B";
+		filename_train_data_prev = "files/"+dataset+"/train_data_C";
+		filename_test_data_next = "files/"+dataset+"/test_data_B";
+		filename_test_data_prev = "files/"+dataset+"/test_data_C";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_B";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_C";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_B";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_C";
 	} else if (partyNum == PARTY_C)
 	{
 		party_num = "C";
-		filename_train_data_next = "files/train_data_C";
-		filename_train_data_prev = "files/train_data_A";
-		filename_test_data_next = "files/test_data_C";
-		filename_test_data_prev = "files/test_data_A";
-		filename_train_labels_next = "files/train_labels_C";
-		filename_train_labels_prev = "files/train_labels_A";
-		filename_test_labels_next = "files/test_labels_C";
-		filename_test_labels_prev = "files/test_labels_A";
+		filename_train_data_next = "files/"+dataset+"/train_data_C";
+		filename_train_data_prev = "files/"+dataset+"/train_data_A";
+		filename_test_data_next = "files/"+dataset+"/test_data_C";
+		filename_test_data_prev = "files/"+dataset+"/test_data_A";
+		filename_train_labels_next = "files/"+dataset+"/train_labels_C";
+		filename_train_labels_prev = "files/"+dataset+"/train_labels_A";
+		filename_test_labels_next = "files/"+dataset+"/test_labels_C";
+		filename_test_labels_prev = "files/"+dataset+"/test_labels_A";
 	} else {
 		party_num = "<unknown party>";
 	}

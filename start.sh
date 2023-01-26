@@ -1,7 +1,7 @@
 # START.sh
 
 # Goto this folder
-cd /home/tmuller/C++/falcon-public
+cd ~/falcon
 
 # Run the thing
 make command
