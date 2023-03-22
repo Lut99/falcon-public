@@ -1154,6 +1154,7 @@ void selectNetwork(string network, string dataset, string security, NeuralNetCon
 			NUM_LAYERS = 20;
 			// NUM_LAYERS = 18;		//Without BN
 			WITH_NORMALIZATION = false;
+			//CNNConfig* l0 = new CNNConfig(28,28,5,96,11,1,5,MINI_BATCH_SIZE);
 			CNNConfig* l0 = new CNNConfig(28,28,1,96,11,1,5,MINI_BATCH_SIZE);
 			MaxpoolConfig* l1 = new MaxpoolConfig(11,11,96,3,2,MINI_BATCH_SIZE);
 			ReLUConfig* l2 = new ReLUConfig(5*5*96,MINI_BATCH_SIZE);
