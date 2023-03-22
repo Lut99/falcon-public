@@ -64,11 +64,11 @@ OPEN_SSL_LOC := /data/swagh/conda
 RUN_TYPE := localhost
 # NETWORK {SecureML, Sarda, MiniONN, LeNet, AlexNet, and VGG16}
 ifndef NETWORK
-NETWORK := VGG16 
+NETWORK := LeNet 
 endif
 # Dataset {MNIST, CIFAR10, and ImageNet}
 ifndef DATASET
-DATASET	:= CIFAR10
+DATASET	:= MNIST
 endif
 # Security {Semi-honest or Malicious} 
 SECURITY:= Semi-honest

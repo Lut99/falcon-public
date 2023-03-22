@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   23 Jan 2023, 13:39:04
+#   22 Mar 2023, 20:02:27
 # Auto updated?
 #   Yes
 #
@@ -21,12 +21,12 @@ from keras.datasets import mnist
 
 
 ##### MAIN #####
-def main(output_dir: str, homogeneous: bool) -> int:
+def main(output_dir: str, mode: str) -> int:
     # Load the MNIST datraset
     (train_imgs, train_lbls), (test_imgs, test_lbls) = mnist.load_data()
 
     # Split it into three parts for three parties
-    if not homogeneous:
+    if mode == "split":
         train_imgs = {
             "A" : train_imgs[     :20000],
             "B" : train_imgs[20000:40000],
@@ -48,7 +48,7 @@ def main(output_dir: str, homogeneous: bool) -> int:
             "B" : test_lbls[3333:6667],
             "C" : test_lbls[6667:],
         }
-    else:
+    elif mode == "duplicate":
         train_imgs = {
             "A" : train_imgs,
             "B" : train_imgs,
@@ -70,6 +70,9 @@ def main(output_dir: str, homogeneous: bool) -> int:
             "B" : test_lbls,
             "C" : test_lbls,
         }
+    elif mode == "secret_share":
+        # This is gon' be interesting
+        pass
 
     # Write them to separate files
     for party in [ "A", "B", "C" ]:
