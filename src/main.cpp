@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	{network = argv[6]; dataset = argv[7]; security = argv[8];}
 	else
 	{
-		network = "AlexNet";
+		network = "VGG16";
 		dataset = "CIFAR10";
 		security = "Semi-honest";
 	}

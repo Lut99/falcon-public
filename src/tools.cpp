@@ -343,6 +343,19 @@ string which_network(string network)
 
 }
 
+string which_dataset(string dataset)
+{
+	if (dataset.find("CIFAR10") != std::string::npos)
+		return "CIFAR10";
+	else if (dataset.find("MNIST") != std::string::npos)
+		return "MNIST";
+	else if (dataset.find("ImageNet") != std::string::npos)
+		return "ImageNet";
+	else 
+		error("dataset not recognised in which_dataset");
+
+}
+
 void print_myType(myType var, string message, string type)
 {
 	if (BIT_SIZE == 64)

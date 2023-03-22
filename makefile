@@ -64,7 +64,7 @@ OPEN_SSL_LOC := /data/swagh/conda
 RUN_TYPE := localhost
 # NETWORK {SecureML, Sarda, MiniONN, LeNet, AlexNet, and VGG16}
 ifndef NETWORK
-NETWORK := AlexNet 
+NETWORK := VGG16 
 endif
 # Dataset {MNIST, CIFAR10, and ImageNet}
 ifndef DATASET
@@ -115,7 +115,7 @@ terminal: Falcon.out ## Run this to print the output of (only) Party 0 to termin
 	@echo "Execution completed"
 
 file: Falcon.out ## Run this to append the output of (only) Party 0 to file output/3PC.txt
-	mkdir -p output
+	#mkdir -p output
 	$(EXE) 2 files/IP_$(RUN_TYPE) files/keyC files/keyAC files/keyBC >/dev/null &
 	$(EXE) 1 files/IP_$(RUN_TYPE) files/keyB files/keyBC files/keyAB >/dev/null &
 	$(MAIN_EXE) 0 files/IP_$(RUN_TYPE) files/keyA files/keyAB files/keyAC >>output/3PC.txt
