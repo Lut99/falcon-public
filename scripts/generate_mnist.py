@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   22 Mar 2023, 20:02:27
+#   23 Mar 2023, 12:08:06
 # Auto updated?
 #   Yes
 #
@@ -72,6 +72,7 @@ def main(output_dir: str, mode: str) -> int:
         }
     elif mode == "secret_share":
         # This is gon' be interesting
+        print("UNIMPLEMENTED; this might crash")
         pass
 
     # Write them to separate files
@@ -118,10 +119,10 @@ if __name__ == "__main__":
     # Define the arguments to parse
     parser = argparse.ArgumentParser()
     parser.add_argument("OUTPUT_DIR", default="./files", help="The output directory to generate the files in. Will complain if it doesn't exist yet.")
-    parser.add_argument("-H", "--homogeneous", action="store_true", help="If given, does not split the dataset three times but rather copies it three times for every party.")
+    parser.add_argument("-m", "--mode", default="split", help="The mode that we use to compute the split in various parties. Can be 'split', 'duplicate' or 'secret_share'.")
 
     # Parse 'em
     args = parser.parse_args()
 
     # Run the main function
-    exit(main(args.OUTPUT_DIR, args.homogeneous))
+    exit(main(args.OUTPUT_DIR, args.mode))
