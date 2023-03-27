@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   23 Mar 2023, 12:08:06
+#   27 Mar 2023, 18:34:06
 # Auto updated?
 #   Yes
 #
@@ -26,61 +26,76 @@ def main(output_dir: str, mode: str) -> int:
     (train_imgs, train_lbls), (test_imgs, test_lbls) = mnist.load_data()
 
     # Split it into three parts for three parties
+    
+    parties = []
     if mode == "split":
+        parties = [ "A", "B", "C" ]
         train_imgs = {
-            "A" : train_imgs[     :20000],
-            "B" : train_imgs[20000:40000],
-            "C" : train_imgs[40000:],
+            "_A" : train_imgs[     :20000],
+            "_B" : train_imgs[20000:40000],
+            "_C" : train_imgs[40000:],
         }
         train_lbls = {
-            "A" : train_lbls[     :20000],
-            "B" : train_lbls[20000:40000],
-            "C" : train_lbls[40000:],
+            "_A" : train_lbls[     :20000],
+            "_B" : train_lbls[20000:40000],
+            "_C" : train_lbls[40000:],
         }
 
         test_imgs = {
-            "A" : test_imgs[    :3333],
-            "B" : test_imgs[3333:6667],
-            "C" : test_imgs[6667:],
+            "_A" : test_imgs[    :3333],
+            "_B" : test_imgs[3333:6667],
+            "_C" : test_imgs[6667:],
         }
         test_lbls = {
-            "A" : test_lbls[    :3333],
-            "B" : test_lbls[3333:6667],
-            "C" : test_lbls[6667:],
+            "_A" : test_lbls[    :3333],
+            "_B" : test_lbls[3333:6667],
+            "_C" : test_lbls[6667:],
         }
     elif mode == "duplicate":
+        parties = [ "A", "B", "C" ]
         train_imgs = {
-            "A" : train_imgs,
-            "B" : train_imgs,
-            "C" : train_imgs,
+            "_A" : train_imgs,
+            "_B" : train_imgs,
+            "_C" : train_imgs,
         }
         train_lbls = {
-            "A" : train_lbls,
-            "B" : train_lbls,
-            "C" : train_lbls,
+            "_A" : train_lbls,
+            "_B" : train_lbls,
+            "_C" : train_lbls,
         }
 
         test_imgs = {
-            "A" : test_imgs,
-            "B" : test_imgs,
-            "C" : test_imgs,
+            "_A" : test_imgs,
+            "_B" : test_imgs,
+            "_C" : test_imgs,
         }
         test_lbls = {
-            "A" : test_lbls,
-            "B" : test_lbls,
-            "C" : test_lbls,
+            "_A" : test_lbls,
+            "_B" : test_lbls,
+            "_C" : test_lbls,
         }
-    elif mode == "secret_share":
-        # This is gon' be interesting
-        print("UNIMPLEMENTED; this might crash")
-        pass
+    elif mode == "no_share":
+        parties = [ "" ]
+        train_imgs = {
+            "" : train_imgs,
+        }
+        train_lbls = {
+            "" : train_lbls,
+        }
+
+        test_imgs = {
+            "" : test_imgs,
+        }
+        test_lbls = {
+            "" : test_lbls,
+        }
 
     # Write them to separate files
-    for party in [ "A", "B", "C" ]:
+    for party in parties:
         # Loop to write a test and training set
         for (kind, data, labels) in [ ("train", train_imgs[party], train_lbls[party]), ("test", test_imgs[party], test_lbls[party]) ]:
             # Write the dataset
-            path = os.path.join(output_dir, f"{kind}_data_{party}")
+            path = os.path.join(output_dir, f"{kind}_data{party}")
             print(f"Generating '{path}' ({data.shape[0]} samples, {data.shape[1]}x{data.shape[2]} images)")
             try:
                 with open(path, "w") as h:
@@ -96,7 +111,7 @@ def main(output_dir: str, mode: str) -> int:
                 return 1
 
             # Generate the file with the labels
-            path = os.path.join(output_dir, f"{kind}_labels_{party}")
+            path = os.path.join(output_dir, f"{kind}_labels{party}")
             print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
             try:
                 with open(path, "w") as h:
