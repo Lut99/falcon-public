@@ -99,7 +99,9 @@ int main(int argc, char** argv)
 	printNetwork(net);
 
 	// Finally, show the accuracy and junk
-	if (dataset.compare("MNIST") == 0) {
+	if (network.compare("VGG16") == 0 && dataset.compare("MNIST") == 0) {
+		net->collectMetrics(MINI_BATCH_SIZE, 33, 33, 3);
+	} else if (dataset.compare("MNIST") == 0) {
 		// I don't know the actual image sizes, just that the total should be 784...
 		net->collectMetrics(MINI_BATCH_SIZE, 784, 1, 1);
 	} else if (network.compare("AlexNet") == 0 && dataset.compare("CIFAR10") == 0) {
