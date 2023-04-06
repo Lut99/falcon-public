@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   27 Mar 2023, 18:34:06
+#   28 Mar 2023, 23:53:56
 # Auto updated?
 #   Yes
 #
@@ -14,6 +14,7 @@
 #
 
 import argparse
+import numpy as np
 import os
 import sys
 
@@ -31,63 +32,86 @@ def main(output_dir: str, mode: str) -> int:
     if mode == "split":
         parties = [ "A", "B", "C" ]
         train_imgs = {
-            "_A" : train_imgs[     :20000],
-            "_B" : train_imgs[20000:40000],
-            "_C" : train_imgs[40000:],
+            "A" : train_imgs[     :20000],
+            "B" : train_imgs[20000:40000],
+            "C" : train_imgs[40000:],
         }
         train_lbls = {
-            "_A" : train_lbls[     :20000],
-            "_B" : train_lbls[20000:40000],
-            "_C" : train_lbls[40000:],
+            "A" : train_lbls[     :20000],
+            "B" : train_lbls[20000:40000],
+            "C" : train_lbls[40000:],
         }
 
         test_imgs = {
-            "_A" : test_imgs[    :3333],
-            "_B" : test_imgs[3333:6667],
-            "_C" : test_imgs[6667:],
+            "A" : test_imgs[    :3333],
+            "B" : test_imgs[3333:6667],
+            "C" : test_imgs[6667:],
         }
         test_lbls = {
-            "_A" : test_lbls[    :3333],
-            "_B" : test_lbls[3333:6667],
-            "_C" : test_lbls[6667:],
+            "A" : test_lbls[    :3333],
+            "B" : test_lbls[3333:6667],
+            "C" : test_lbls[6667:],
         }
     elif mode == "duplicate":
         parties = [ "A", "B", "C" ]
         train_imgs = {
-            "_A" : train_imgs,
-            "_B" : train_imgs,
-            "_C" : train_imgs,
+            "A" : train_imgs,
+            "B" : train_imgs,
+            "C" : train_imgs,
         }
         train_lbls = {
-            "_A" : train_lbls,
-            "_B" : train_lbls,
-            "_C" : train_lbls,
+            "A" : train_lbls,
+            "B" : train_lbls,
+            "C" : train_lbls,
         }
 
         test_imgs = {
-            "_A" : test_imgs,
-            "_B" : test_imgs,
-            "_C" : test_imgs,
+            "A" : test_imgs,
+            "B" : test_imgs,
+            "C" : test_imgs,
         }
         test_lbls = {
-            "_A" : test_lbls,
-            "_B" : test_lbls,
-            "_C" : test_lbls,
+            "A" : test_lbls,
+            "B" : test_lbls,
+            "C" : test_lbls,
         }
     elif mode == "no_share":
-        parties = [ "" ]
+        parties = [ "all" ]
         train_imgs = {
-            "" : train_imgs,
+            "all" : train_imgs,
         }
         train_lbls = {
-            "" : train_lbls,
+            "all" : train_lbls,
         }
 
         test_imgs = {
-            "" : test_imgs,
+            "all" : test_imgs,
         }
         test_lbls = {
-            "" : test_lbls,
+            "all" : test_lbls,
+        }
+    elif mode == "zeroes":
+        parties = [ "A", "B", "C" ]
+        train_imgs = {
+            "A" : train_imgs,
+            "B" : np.zeros(train_imgs.shape),
+            "C" : np.zeros(train_imgs.shape),
+        }
+        train_lbls = {
+            "A" : train_lbls,
+            "B" : np.zeros(train_lbls.shape),
+            "C" : np.zeros(train_lbls.shape),
+        }
+
+        test_imgs = {
+            "A" : test_imgs,
+            "B" : np.zeros(test_imgs.shape),
+            "C" : np.zeros(test_imgs.shape),
+        }
+        test_lbls = {
+            "A" : test_lbls,
+            "B" : np.zeros(test_lbls.shape),
+            "C" : np.zeros(test_lbls.shape),
         }
 
     # Write them to separate files
@@ -95,7 +119,7 @@ def main(output_dir: str, mode: str) -> int:
         # Loop to write a test and training set
         for (kind, data, labels) in [ ("train", train_imgs[party], train_lbls[party]), ("test", test_imgs[party], test_lbls[party]) ]:
             # Write the dataset
-            path = os.path.join(output_dir, f"{kind}_data{party}")
+            path = os.path.join(output_dir, f"{kind}_data_{party}")
             print(f"Generating '{path}' ({data.shape[0]} samples, {data.shape[1]}x{data.shape[2]} images)")
             try:
                 with open(path, "w") as h:
@@ -111,7 +135,7 @@ def main(output_dir: str, mode: str) -> int:
                 return 1
 
             # Generate the file with the labels
-            path = os.path.join(output_dir, f"{kind}_labels{party}")
+            path = os.path.join(output_dir, f"{kind}_labels_{party}")
             print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
             try:
                 with open(path, "w") as h:
@@ -134,7 +158,7 @@ if __name__ == "__main__":
     # Define the arguments to parse
     parser = argparse.ArgumentParser()
     parser.add_argument("OUTPUT_DIR", default="./files", help="The output directory to generate the files in. Will complain if it doesn't exist yet.")
-    parser.add_argument("-m", "--mode", default="split", help="The mode that we use to compute the split in various parties. Can be 'split', 'duplicate' or 'secret_share'.")
+    parser.add_argument("-m", "--mode", choices=["split", "duplicate", "no_share", "zeroes"], default="zeroes", help="The mode that we use to compute the split in various parties.")
 
     # Parse 'em
     args = parser.parse_args()

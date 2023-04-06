@@ -5,7 +5,7 @@
 # Created:
 #   27 Mar 2023, 18:25:00
 # Last edited:
-#   27 Mar 2023, 18:45:18
+#   28 Mar 2023, 23:42:09
 # Auto updated?
 #   Yes
 #
@@ -34,7 +34,7 @@ def main(n_parties: int, files: list[str], file_type: str) -> int:
                 # Read a buffer for as long as we can
                 buffer = ""
                 run = True
-                first = True
+                first = [ True for _ in range(n_parties) ]
                 while run:
                     chunk = h.read(4096)
                     if not chunk: break
@@ -52,16 +52,17 @@ def main(n_parties: int, files: list[str], file_type: str) -> int:
                                 x = int(buffer)
 
                                 # Find enough shares
-                                for _ in range(n_parties):
-                                    shares.append(random.randint(0, x))
+                                for _ in range(n_parties - 1):
+                                    shares.append(random.randint(-42, x))
                                     x -= shares[-1]
+                                shares.append(x)
                             else:
                                 print(f"ERROR: Unknown file type '{file_type}'", file=sys.stderr)
                                 return 1
 
                             # Write the shares to the output files
                             for i in range(n_parties):
-                                if first: first = False
+                                if first[i]: first[i] = False
                                 else: out[i].write(' ')
                                 out[i].write(str(shares[i]))
 

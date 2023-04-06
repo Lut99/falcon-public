@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 	// preload_network(PRELOADING, network, net);
 
 	#ifdef PRELOAD_NETWORK
-	preload_network(true, network, net);
+	preload_network(true, network, dataset, net);
 	#endif
 	
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 	//Run inference (possibly with preloading a network)
 	// network += " test";
 	#ifdef PRELOAD_NETWORK
-	test(true, network, net);
+	test(true, network, dataset, net);
 	#endif
 
 	end_m(network);
