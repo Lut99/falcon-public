@@ -11,6 +11,7 @@
 #include "Functionalities.h"
 #include "Accuracy.h"
 using namespace std;
+#include <iostream>
 
 extern size_t INPUT_SIZE;
 extern size_t LAST_LAYER_SIZE;
@@ -63,7 +64,7 @@ NeuralNetwork::~NeuralNetwork()
 void NeuralNetwork::forward()
 {
 	log_print("NN.forward");
-
+	cout << "layers[0] is " << layers.size() << "and size input layer data is " << inputData.size() << endl;
 	layers[0]->forward(inputData);
 	if (LARGE_NETWORK)
 		cout << "Forward \t" << layers[0]->layerNum << " completed..." << endl;
