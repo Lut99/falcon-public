@@ -89,10 +89,6 @@ void train(NeuralNetwork* net)
 extern void print_vector(RSSVectorMyType &var, string type, string pre_text, int print_nos);
 extern string which_dataset(string dataset);
 extern string which_network(string network);
-<<<<<<< HEAD
-=======
-extern string which_dataset(string dataset);
->>>>>>> ba7f355c0d3fe5ede8823d5d1771183c84103d17
 void test(bool PRELOADING, string network, string dataset, NeuralNetwork* net)
 {
 	log_print("test");
