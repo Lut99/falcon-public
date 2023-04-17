@@ -7,7 +7,7 @@ using namespace std;
 MaxpoolLayer::MaxpoolLayer(MaxpoolConfig* conf, int _layerNum)
 :Layer(_layerNum),
  conf(conf->imageHeight, conf->imageWidth, conf->features, 
-	  conf->poolSize, conf->stride, conf->batchSize),
+	  conf->poolSize, conf->stride, conf->padding, conf->batchSize),
  activations(conf->batchSize * conf->features * 
 		    (((conf->imageWidth - conf->poolSize)/conf->stride) + 1) * 
  		    (((conf->imageHeight - conf->poolSize)/conf->stride) + 1)),
@@ -40,12 +40,14 @@ void MaxpoolLayer::forward(const RSSVectorMyType& inputActivation)
 	size_t f 	= conf.poolSize;
 	size_t Din 	= conf.features;
 	size_t S 	= conf.stride;
+	size_t P    = conf.padding;
 	size_t ow 	= (((iw-f)/S)+1);
 	size_t oh	= (((ih-f)/S)+1);
 
 	RSSVectorMyType temp1(ow*oh*Din*B*f*f);
 	{
-		size_t sizeBeta = iw;
+		zeroPad(inputActivation, temp1, iw, ih, P, Din, B);
+		size_t sizeBeta = iw+2*P;
 		size_t sizeD 	= sizeBeta*ih;
 		size_t sizeB 	= sizeD*Din;
 		size_t counter 	= 0;

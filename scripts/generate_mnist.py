@@ -5,7 +5,7 @@
 # Created:
 #   22 Dec 2022, 14:23:55
 # Last edited:
-#   28 Mar 2023, 23:53:56
+#   23 Jan 2023, 13:39:04
 # Auto updated?
 #   Yes
 #
@@ -14,7 +14,6 @@
 #
 
 import argparse
-import numpy as np
 import os
 import sys
 
@@ -22,15 +21,12 @@ from keras.datasets import mnist
 
 
 ##### MAIN #####
-def main(output_dir: str, mode: str) -> int:
+def main(output_dir: str, homogeneous: bool) -> int:
     # Load the MNIST datraset
     (train_imgs, train_lbls), (test_imgs, test_lbls) = mnist.load_data()
 
     # Split it into three parts for three parties
-    
-    parties = []
-    if mode == "split":
-        parties = [ "A", "B", "C" ]
+    if not homogeneous:
         train_imgs = {
             "A" : train_imgs[     :20000],
             "B" : train_imgs[20000:40000],
@@ -52,8 +48,7 @@ def main(output_dir: str, mode: str) -> int:
             "B" : test_lbls[3333:6667],
             "C" : test_lbls[6667:],
         }
-    elif mode == "duplicate":
-        parties = [ "A", "B", "C" ]
+    else:
         train_imgs = {
             "A" : train_imgs,
             "B" : train_imgs,
@@ -75,78 +70,69 @@ def main(output_dir: str, mode: str) -> int:
             "B" : test_lbls,
             "C" : test_lbls,
         }
-    elif mode == "no_share":
-        parties = [ "all" ]
-        train_imgs = {
-            "all" : train_imgs,
-        }
-        train_lbls = {
-            "all" : train_lbls,
-        }
-
-        test_imgs = {
-            "all" : test_imgs,
-        }
-        test_lbls = {
-            "all" : test_lbls,
-        }
-    elif mode == "zeroes":
-        parties = [ "A", "B", "C" ]
-        train_imgs = {
-            "A" : train_imgs,
-            "B" : np.zeros(train_imgs.shape),
-            "C" : np.zeros(train_imgs.shape),
-        }
-        train_lbls = {
-            "A" : train_lbls,
-            "B" : np.zeros(train_lbls.shape),
-            "C" : np.zeros(train_lbls.shape),
-        }
-
-        test_imgs = {
-            "A" : test_imgs,
-            "B" : np.zeros(test_imgs.shape),
-            "C" : np.zeros(test_imgs.shape),
-        }
-        test_lbls = {
-            "A" : test_lbls,
-            "B" : np.zeros(test_lbls.shape),
-            "C" : np.zeros(test_lbls.shape),
-        }
 
     # Write them to separate files
-    for party in parties:
+    for party in [ "A", "B", "C" ]:
         # Loop to write a test and training set
         for (kind, data, labels) in [ ("train", train_imgs[party], train_lbls[party]), ("test", test_imgs[party], test_lbls[party]) ]:
             # Write the dataset
             path = os.path.join(output_dir, f"{kind}_data_{party}")
             print(f"Generating '{path}' ({data.shape[0]} samples, {data.shape[1]}x{data.shape[2]} images)")
-            try:
-                with open(path, "w") as h:
-                    # Generate one image per sample
-                    for i in range(data.shape[0]):
-                        # Generate width * height pixels...
-                        for y in range(data.shape[1]):
-                            # ...with pixel pixels each
-                            for x in range(data.shape[2]):
-                                h.write(f"{data[i, y, x]} ")
-            except IOError as e:
-                print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
-                return 1
+            if party == "A":
+                try:
+                    with open(path, "w") as h:
+                        # Generate one image per sample
+                        for i in range(data.shape[0]):
+                            # Generate width * height pixels...
+                            for y in range(data.shape[1]):
+                                # ...with pixel pixels each
+                                for x in range(data.shape[2]):
+                                    h.write(f"{data[i, y, x]} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
 
-            # Generate the file with the labels
-            path = os.path.join(output_dir, f"{kind}_labels_{party}")
-            print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
-            try:
-                with open(path, "w") as h:
-                    # Generate one string of floats per sample
-                    for i in range(labels.shape[0]):
-                        # Generate last_layer value
-                        for j in range(10):
-                            h.write(f"{1 if labels[i] == j else 0} ")
-            except IOError as e:
-                print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
-                return 1
+                # Generate the file with the labels
+                path = os.path.join(output_dir, f"{kind}_labels_{party}")
+                print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
+                try:
+                    with open(path, "w") as h:
+                        # Generate one string of floats per sample
+                        for i in range(labels.shape[0]):
+                            # Generate last_layer value
+                            for j in range(10):
+                                h.write(f"{1 if labels[i] == j else 0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
+            else:
+                try:
+                    with open(path, "w") as h:
+                        # Generate one image per sample
+                        for i in range(data.shape[0]):
+                            # Generate width * height pixels...
+                            for y in range(data.shape[1]):
+                                # ...with pixel pixels each
+                                for x in range(data.shape[2]):
+                                    h.write(f"{0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
+
+                # Generate the file with the labels
+                path = os.path.join(output_dir, f"{kind}_labels_{party}")
+                print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
+                try:
+                    with open(path, "w") as h:
+                        # Generate one string of floats per sample
+                        for i in range(labels.shape[0]):
+                            # Generate last_layer value
+                            for j in range(10):
+                                h.write(f"{0 if labels[i] == j else 0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
+
 
     # Done
     return 0
@@ -158,10 +144,10 @@ if __name__ == "__main__":
     # Define the arguments to parse
     parser = argparse.ArgumentParser()
     parser.add_argument("OUTPUT_DIR", default="./files", help="The output directory to generate the files in. Will complain if it doesn't exist yet.")
-    parser.add_argument("-m", "--mode", choices=["split", "duplicate", "no_share", "zeroes"], default="zeroes", help="The mode that we use to compute the split in various parties.")
+    parser.add_argument("-H", "--homogeneous", action="store_true", help="If given, does not split the dataset three times but rather copies it three times for every party.")
 
     # Parse 'em
     args = parser.parse_args()
 
     # Run the main function
-    exit(main(args.OUTPUT_DIR, args.mode))
+    exit(main(args.OUTPUT_DIR, args.homogeneous))

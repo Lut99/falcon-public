@@ -3,7 +3,7 @@
 #include "LayerConfig.h"
 #include "globals.h"
 using namespace std;
-
+#include <iostream>
 class MaxpoolConfig : public LayerConfig
 {
 public:
@@ -12,18 +12,21 @@ public:
 	size_t features = 0;		//#Input feature maps
 	size_t poolSize = 0;		//Filter is of size (poolSize x poolSize)
 	size_t stride = 0;
+	size_t padding = 0;
 	size_t batchSize = 0;
 
 	MaxpoolConfig(size_t _imageHeight, size_t _imageWidth, size_t _features, 
-				  size_t _poolSize, size_t _stride, size_t _batchSize)
+				  size_t _poolSize, size_t _stride, size_t _padding, size_t _batchSize)
 	:imageHeight(_imageHeight),
 	 imageWidth(_imageWidth),
 	 features(_features),
 	 poolSize(_poolSize),
 	 stride(_stride),
+	 padding(_padding),
 	 batchSize(_batchSize),
 	 LayerConfig("Maxpool")
 	{
+		cout << "image width - pool % stride == 0 means ->" << imageWidth << " - " << poolSize << " % " << stride << " == " << ((imageWidth - poolSize)%stride) << endl;
 		assert((imageWidth - poolSize)%stride == 0 && "Maxpool layer parameters incorrect");
 		assert((imageHeight - poolSize)%stride == 0 && "Maxpool layer parameters incorrect");
 	};

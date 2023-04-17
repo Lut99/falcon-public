@@ -200,7 +200,7 @@ void NeuralNetwork::getAccuracy(const RSSVectorMyType &maxIndex, vector<size_t> 
 	
 	// reconstruct ground truth from output data
 	funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
-	// print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+	print_vector(outputData, "FLOAT", "outputData:", rows*columns);
 	
 	// reconstruct prediction from neural network
 	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
@@ -268,12 +268,28 @@ void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height
 		vector<smallType> prediction(rows*columns);
 		
 		// reconstruct ground truth from output data
-		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
 		
+		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
+		cout << "GROUND TRUTTTTH ";
+		for (int i = 0; i < groundTruth.size(); i++)
+		{
+			cout << groundTruth[i] << " "; 
+			
+		}
+		cout << endl;
+			
+
 		// reconstruct prediction from neural network
 		funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
 		funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
+		cout << "PREDICTIONS ";
 
+		for (int i = 0; i < prediction.size(); i++)
+		{
+			cout << prediction[i] << " "; 
+			
+		}
+		cout << endl;
 		// Cast both to floats
 		for (size_t i = 0; i < (rows*columns); i++) {
 			groundTruth_float[i] = ((float) groundTruth[i]) / (1 << FLOAT_PRECISION);

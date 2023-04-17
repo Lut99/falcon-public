@@ -3,7 +3,7 @@
 #include "Functionalities.h"
 #include "Precompute.h"
 #include <thread>
-
+#include <iostream>
 
 using namespace std;
 extern Precompute PrecomputeObject;
@@ -333,8 +333,10 @@ void funcReconstruct(const RSSVectorMyType &a, vector<myType> &b, size_t size, s
 		delete[] threads;
 
 		for (int i = 0; i < size; ++i)
+			{
 			b[i] = b[i] + a_prev[i];
-
+			//cout << "B[I] WHICH SHOULD NOT BE ZERO ==> " << b[i] << endl;
+			}
 		if (print)
 		{
 			std::cout << str << ": \t\t";
