@@ -3,7 +3,7 @@
 #include "Functionalities.h"
 #include "Precompute.h"
 #include <thread>
-
+#include <iostream>
 
 using namespace std;
 extern Precompute PrecomputeObject;
@@ -333,8 +333,10 @@ void funcReconstruct(const RSSVectorMyType &a, vector<myType> &b, size_t size, s
 		delete[] threads;
 
 		for (int i = 0; i < size; ++i)
+			{
 			b[i] = b[i] + a_prev[i];
-
+			//cout << "B[I] WHICH SHOULD NOT BE ZERO ==> " << b[i] << endl;
+			}
 		if (print)
 		{
 			std::cout << str << ": \t\t";
@@ -675,11 +677,13 @@ void funcReconstruct3out3(const vector<myType> &a, vector<myType> &b, size_t siz
 // Output is a share between PARTY_A and PARTY_B.
 // a^transpose_a is rows*common_dim and b^transpose_b is common_dim*columns
 // NOTE: truncation is FLOAT_PRECISION
+#define MM_TRACE
 void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyType &c, 
 					size_t rows, size_t common_dim, size_t columns,
 				 	size_t transpose_a, size_t transpose_b, size_t truncation)
 {
 	log_print("funcMatMul");
+	
 	#ifdef MM_TRACE
 	cout << "funcMatMul(): a.size() == rows*common_dim? (" << a.size() << " == " << rows << "x" << common_dim << " == " << (rows*common_dim) << ')' << endl;
 	#endif

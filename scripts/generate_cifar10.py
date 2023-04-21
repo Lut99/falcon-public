@@ -19,7 +19,7 @@ import sys
 
 from keras.datasets import cifar10
 import numpy as np
-from tensorflow.image import resize
+#from tensorflow.image import resize
 
 
 ##### MAIN #####
@@ -28,9 +28,9 @@ def main(output_dir: str, homogeneous: bool) -> int:
     (train_imgs, train_lbls), (test_imgs, test_lbls) = cifar10.load_data()
 
     # Resize the images
-    print("Resizing images from 32x32 to 33x33 (damn you Falcon)...")
-    train_imgs = np.array([ resize(img, (33, 33)) for img in train_imgs ], dtype=np.float64)
-    test_imgs  = np.array([ resize(img, (33, 33)) for img in test_imgs ], dtype=np.float64)
+    #print("Resizing images from 32x32 to 33x33 (damn you Falcon)...")
+    #train_imgs = np.array([ resize(img, (33, 33)) for img in train_imgs ], dtype=np.float64)
+    ##test_imgs  = np.array([ resize(img, (33, 33)) for img in test_imgs ], dtype=np.float64)
 
     # Split it into three parts for three parties
     if not homogeneous:
@@ -85,34 +85,62 @@ def main(output_dir: str, homogeneous: bool) -> int:
             # Write the dataset
             path = os.path.join(output_dir, f"{kind}_data_{party}")
             print(f"Generating '{path}' ({data.shape[0]} samples, {data.shape[1]}x{data.shape[2]} images)")
-            try:
-                with open(path, "w") as h:
-                    # Generate one image per sample
-                    for i in range(data.shape[0]):
-                        # Generate width * height pixels...
-                        for y in range(data.shape[1]):
-                            for x in range(data.shape[2]):
-                                # ...with pixel pixels each
-                                for p in range(data.shape[3]):
-                                    h.write(f"{data[i, y, x, p]} ")
-            except IOError as e:
-                print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
-                return 1
+            if party == "A":
+                try:
+                    with open(path, "w") as h:
+                        # Generate one image per sample
+                        for i in range(data.shape[0]):
+                            # Generate width * height pixels...
+                            for y in range(data.shape[1]):
+                                for x in range(data.shape[2]):
+                                    # ...with pixel pixels each
+                                    for p in range(data.shape[3]):
+                                        h.write(f"{data[i, y, x, p]} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
 
-            # Generate the file with the labels
-            path = os.path.join(output_dir, f"{kind}_labels_{party}")
-            print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
-            try:
-                with open(path, "w") as h:
-                    # Generate one string of floats per sample
-                    for i in range(labels.shape[0]):
-                        # Generate last_layer value
-                        for j in range(10):
-                            h.write(f"{1 if labels[i] == j else 0} ")
-            except IOError as e:
-                print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
-                return 1
+                # Generate the file with the labels
+                path = os.path.join(output_dir, f"{kind}_labels_{party}")
+                print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
+                try:
+                    with open(path, "w") as h:
+                        # Generate one string of floats per sample
+                        for i in range(labels.shape[0]):
+                            # Generate last_layer value
+                            for j in range(10):
+                                h.write(f"{1 if labels[i] == j else 0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
+            else:
+                try:
+                    with open(path, "w") as h:
+                        # Generate one image per sample
+                        for i in range(data.shape[0]):
+                            # Generate width * height pixels...
+                            for y in range(data.shape[1]):
+                                for x in range(data.shape[2]):
+                                    # ...with pixel pixels each
+                                    for p in range(data.shape[3]):
+                                        h.write(f"{0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
 
+                # Generate the file with the labels
+                path = os.path.join(output_dir, f"{kind}_labels_{party}")
+                print(f"Generating '{path}' ({labels.shape[0]} samples, 10 output classes per sample)")
+                try:
+                    with open(path, "w") as h:
+                        # Generate one string of floats per sample
+                        for i in range(labels.shape[0]):
+                            # Generate last_layer value
+                            for j in range(10):
+                                h.write(f"{0 if labels[i] == j else 0} ")
+                except IOError as e:
+                    print(f"ERROR: Failed to write to '{path}': {e}", file=sys.stderr)
+                    return 1
     # Done
     return 0
 

@@ -11,6 +11,7 @@
 #include "Functionalities.h"
 #include "Accuracy.h"
 using namespace std;
+#include <iostream>
 
 extern size_t INPUT_SIZE;
 extern size_t LAST_LAYER_SIZE;
@@ -63,7 +64,7 @@ NeuralNetwork::~NeuralNetwork()
 void NeuralNetwork::forward()
 {
 	log_print("NN.forward");
-
+	cout << "layers[0] is " << layers.size() << "and size input layer data is " << inputData.size() << endl;
 	layers[0]->forward(inputData);
 	if (LARGE_NETWORK)
 		cout << "Forward \t" << layers[0]->layerNum << " completed..." << endl;
@@ -199,7 +200,7 @@ void NeuralNetwork::getAccuracy(const RSSVectorMyType &maxIndex, vector<size_t> 
 	
 	// reconstruct ground truth from output data
 	funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
-	// print_vector(outputData, "FLOAT", "outputData:", rows*columns);
+	print_vector(outputData, "FLOAT", "outputData:", rows*columns);
 	
 	// reconstruct prediction from neural network
 	funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
@@ -267,19 +268,37 @@ void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height
 		vector<smallType> prediction(rows*columns);
 		
 		// reconstruct ground truth from output data
-		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
 		
+		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
+		cout << "GROUND TRUTTTTH ";
+		for (int i = 0; i < groundTruth.size(); i++)
+		{
+			cout << groundTruth[i] << " "; 
+			
+		}
+		cout << endl;
+			
+
 		// reconstruct prediction from neural network
 		funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
 		funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
+		cout << "PREDICTIONS ";
 
+		for (int i = 0; i < prediction.size(); i++)
+		{
+			cout << prediction[i] << " "; 
+			
+		}
+		cout << endl;
 		// Cast both to floats
 		for (size_t i = 0; i < (rows*columns); i++) {
 			groundTruth_float[i] = ((float) groundTruth[i]) / (1 << FLOAT_PRECISION);
 			prediction_float[i]  = (float) prediction[i];
 		}
 	}
-
+	cout << "predicted " << endl;
+	for (float i : prediction_float)
+		cout << i << endl; 
 	// Now print the metrics over the entire thing
 	printMetrics(groundTruth_float, prediction_float);
 
