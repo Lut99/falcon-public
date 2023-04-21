@@ -70,20 +70,20 @@ void parseInputs(int argc, char* argv[])
 		}
 }
 
-void train(NeuralNetwork* net)
-{
-	log_print("train");
+// void train(NeuralNetwork* net)
+// {
+// 	log_print("train");
 
-	for (int i = 0; i < NUM_ITERATIONS; ++i)
-	{
-		// cout << "----------------------------------" << endl;  
-		cout << "Iteration " << i << endl;
-		readMiniBatch(net, "TRAINING");
-		net->forward();
-		net->backward();
-		// cout << "----------------------------------" << endl;  
-	}
-}
+// 	for (int i = 0; i < NUM_ITERATIONS; ++i)
+// 	{
+// 		// cout << "----------------------------------" << endl;  
+// 		cout << "Iteration " << i << endl;
+// 		readMiniBatch(net, "TRAINING");
+// 		net->forward();
+// 		net->backward();
+// 		// cout << "----------------------------------" << endl;  
+// 	}
+// }
 
 
 extern void print_vector(RSSVectorMyType &var, string type, string pre_text, int print_nos);
@@ -127,15 +127,15 @@ void test(bool PRELOADING, string network, string dataset, NeuralNetwork* net)
 
 
 // Generate a file with 0's of appropriate size
-void generate_zeros(string name, size_t number, string network, string dataset)
-{
-	string default_path = "files/preload/"+which_dataset(dataset)+"/"+which_network(network)+"/";
-	ofstream data_file;
-	data_file.open(default_path+name);
+// void generate_zeros(string name, size_t number, string network, string dataset)
+// {
+// 	string default_path = "files/preload/"+which_dataset(dataset)+"/"+which_network(network)+"/";
+// 	ofstream data_file;
+// 	data_file.open(default_path+name);
 
-	for (int i = 0; i < number; ++i)
-		data_file << (int)0 << " ";
-}
+// 	for (int i = 0; i < number; ++i)
+// 		data_file << (int)0 << " ";
+// }
 
 
 extern size_t nextParty(size_t party);
@@ -650,7 +650,7 @@ void loadData(string net, string dataset)
 		INPUT_SIZE = 784;
 		LAST_LAYER_SIZE = 10;
 		TRAINING_DATA_SIZE = 8;
-		TEST_DATA_SIZE = 8;
+		TEST_DATA_SIZE = 784;
 		LARGE_NETWORK = false;
 	}
 	else if (dataset.compare("CIFAR10") == 0)
@@ -658,7 +658,7 @@ void loadData(string net, string dataset)
 		LARGE_NETWORK = false;
 		if (net.compare("AlexNet") == 0)
 		{
-			INPUT_SIZE = 33*33*3;
+			INPUT_SIZE = 32*32*3;
 			LAST_LAYER_SIZE = 10;
 			TRAINING_DATA_SIZE = 8;
 			TEST_DATA_SIZE = 8;			

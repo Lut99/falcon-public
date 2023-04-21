@@ -296,7 +296,9 @@ void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height
 			prediction_float[i]  = (float) prediction[i];
 		}
 	}
-
+	cout << "predicted " << endl;
+	for (float i : prediction_float)
+		cout << i << endl; 
 	// Now print the metrics over the entire thing
 	printMetrics(groundTruth_float, prediction_float);
 
