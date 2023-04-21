@@ -4,7 +4,7 @@
  * Created:
  *   16 Jan 2023, 17:41:23
  * Last edited:
- *   25 Jan 2023, 17:15:26
+ *   21 Apr 2023, 15:20:36
  * Auto updated?
  *   Yes
  *
@@ -267,30 +267,66 @@ void printMetrics(const vector<float>& actual, const vector<float>& predicted) {
 		if (i % 10 == 9) { cout << "   "; }
 	}
 	cout << endl;
-	cout << "Predicted labels (class):";
-	for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
-		// Compress the string of output layer outputs to a single number (the class)
+
+	cout << "Sample-by-sample comparison:" << endl;
+	cout << "Pred. | Gold" << endl;
+	// for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
+	for (size_t i = 0; i < (predicted.size() > actual.size() ? predicted.size() : actual.size()); i += LAST_LAYER_SIZE) {
+		// Compress the string of output layer outputs to a single number (the class) for the prediction
 		int pred = -1;
-		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
-			if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
-				pred = j;
+		if (i < predicted.size()) {
+			for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+				if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
+					pred = j;
+				}
 			}
 		}
-		cout << ' ' << pred;
-	}
-	cout << endl;
-	cout << "Ground truth (class):";
-	for (size_t i = 0; i < (actual.size() < (10 * LAST_LAYER_SIZE) ? actual.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
-		// Compress the string of nodes to a single number (the class)
+		// And for the ground truth
 		int act = -1;
-		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
-			if ((act < 0 && actual[i + j] > 0) || actual[i + j] > actual[i + act]) {
-				act = j;
+		if (i < actual.size()) {
+			for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+				if ((act < 0 && actual[i + j] > 0) || actual[i + j] > actual[i + act]) {
+					act = j;
+				}
 			}
 		}
-		cout << ' ' << act;
+
+		// Print the prediction and the ground truth (or empty if we're passed that list's length)
+		cout << "    ";
+		if (pred >= 0) { cout << pred; } else { cout << ' '; }
+		cout << " | ";
+		if (act >= 0)  { cout << act;  } else { act << ' ';  }
+		// Print whether it was correct
+		if (pred >= 0 && act >= 0 && pred == act) { cout << " V"; }
+		cout << endl;
 	}
-	cout << endl;
+
+	// cout << "Predicted labels (class):";
+	// // for (size_t i = 0; i < (predicted.size() < (10 * LAST_LAYER_SIZE) ? predicted.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
+	// for (size_t i = 0; i < predicted.size(); i += LAST_LAYER_SIZE) {
+	// 	// Compress the string of output layer outputs to a single number (the class)
+	// 	int pred = -1;
+	// 	for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+	// 		if ((pred < 0 && predicted[i + j] > 0) || predicted[i + j] > predicted[i + pred]) {
+	// 			pred = j;
+	// 		}
+	// 	}
+	// 	cout << ' ' << pred;
+	// }
+	// cout << endl;
+	// cout << "Ground truth (class):";
+	// // for (size_t i = 0; i < (actual.size() < (10 * LAST_LAYER_SIZE) ? actual.size() : (10 * LAST_LAYER_SIZE)); i += LAST_LAYER_SIZE) {
+	// for (size_t i = 0; i < actual.size(); i += LAST_LAYER_SIZE) {
+	// 	// Compress the string of nodes to a single number (the class)
+	// 	int act = -1;
+	// 	for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+	// 		if ((act < 0 && actual[i + j] > 0) || actual[i + j] > actual[i + act]) {
+	// 			act = j;
+	// 		}
+	// 	}
+	// 	cout << ' ' << act;
+	// }
+	// cout << endl;
 
 	// Done
 }

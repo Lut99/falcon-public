@@ -35,11 +35,11 @@ MATMUL_TRACE :=
 endif
 
 # If you specify `PRELOAD_NET`, we will pass the macro to preload a network
-ifdef PRELOAD_NET
+# ifdef PRELOAD_NET
 PRELOAD_NETWORK := -D PRELOAD_NETWORK
-else
-PRELOAD_NETWORK := 
-endif
+# else
+# PRELOAD_NETWORK := 
+# endif
 
 
 ########################## Executable (Falcon.out) arguments ##########################
@@ -106,6 +106,7 @@ Falcon.out: $(OBJ_FILES)
 clean: ## Run this to clean all files
 	rm -rf Falcon.out
 	rm -rf src/*.o util/*.o
+	rm -f ./output/3PC.txt
 
 ################################# Remote runs ##########################################
 terminal: Falcon.out ## Run this to print the output of (only) Party 0 to terminal

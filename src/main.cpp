@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	{network = argv[6]; dataset = argv[7]; security = argv[8];}
 	else
 	{
-		network = "AlexNet";
+		network = "LeNet";
 		dataset = "MNIST";
 		security = "Semi-honest";
 	}
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 	#ifdef PRELOAD_NETWORK
 	preload_network(true, network, dataset, net);
 	#endif
-	
+
 
 	start_m();
 
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-/****************************** CLEAN-UP ******************************/ 
+	/****************************** CLEAN-UP ******************************/ 
 	delete aes_indep;
 	delete aes_next;
 	delete aes_prev;

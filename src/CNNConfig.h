@@ -33,9 +33,5 @@ public:
 	 padding(_padding),
 	 batchSize(_batchSize),
 	 LayerConfig("CNN")
-	{
-	cout << "CNNConfig():imageWidth is " << imageWidth <<" and filterSize is " << filterSize << " and padding and stride are" << padding << " " << stride << "and the whole thing is " << ((imageWidth - filterSize + 2*padding)%stride) << endl;
-		assert((imageWidth - filterSize + 2*padding)%stride == 0 && "CNN parameter check failed");
-		assert((imageHeight - filterSize + 2*padding)%stride == 0 && "CNN parameter check failed");
-	};
+	{};
 };

@@ -145,22 +145,22 @@ extern size_t nextParty(size_t party);
 
 
 /***** HELPER FUNCTIONS *****/
-// Loads the input for a given layer.
-void load_input(NeuralNetwork* net, string net_name, string data_name, string path) {
-	string path_input_1 = path+"input_"+to_string(partyNum);
-	string path_input_2 = path+"input_"+to_string(nextParty(partyNum));
-	ifstream f_input_1(path_input_1), f_input_2(path_input_2);
-	if (!f_input_1.is_open()) { cerr << "Failed to open preload input file '" << path_input_1 << "': " << strerror(errno) << endl; }
-	if (!f_input_2.is_open()) { cerr << "Failed to open preload input file '" << path_input_2 << "': " << strerror(errno) << endl; }
+// // Loads the input for a given layer.
+// void load_input(NeuralNetwork* net, string net_name, string data_name, string path) {
+// 	string path_input_1 = path+"input_"+to_string(partyNum);
+// 	string path_input_2 = path+"input_"+to_string(nextParty(partyNum));
+// 	ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+// 	if (!f_input_1.is_open()) { cerr << "Failed to open preload input file '" << path_input_1 << "': " << strerror(errno) << endl; }
+// 	if (!f_input_2.is_open()) { cerr << "Failed to open preload input file '" << path_input_2 << "': " << strerror(errno) << endl; }
 
-	float temp_next = 0, temp_prev = 0;
-	for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
-	{
-		f_input_1 >> temp_next; f_input_2 >> temp_prev;
-		net->inputData.at(i) = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-	}
-	f_input_1.close(); f_input_2.close();
-}
+// 	float temp_next = 0, temp_prev = 0;
+// 	for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+// 	{
+// 		f_input_1 >> temp_next; f_input_2 >> temp_prev;
+// 		net->inputData.at(i) = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+// 	}
+// 	f_input_1.close(); f_input_2.close();
+// }
 
 // Loads the weights for a given layer.
 template<class LAYER> void load_weights(NeuralNetwork* net, string net_name, string data_name, string path, size_t file_n, size_t layer, size_t size) {
@@ -236,17 +236,17 @@ void preload_network(bool PRELOADING, string network, string dataset, NeuralNetw
 	{
 		string temp = "SecureML";
 
-		/************************** Input **********************************/
-		string path_input_1 = default_path+"input_"+to_string(partyNum);
-		string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
-		ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+		// /************************** Input **********************************/
+		// string path_input_1 = default_path+"input_"+to_string(partyNum);
+		// string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
+		// ifstream f_input_1(path_input_1), f_input_2(path_input_2);
 
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
-		{
-			f_input_1 >> temp_next; f_input_2 >> temp_prev;
-			net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_input_1.close(); f_input_2.close();
+		// for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+		// {
+		// 	f_input_1 >> temp_next; f_input_2 >> temp_prev;
+		// 	net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+		// }
+		// f_input_1.close(); f_input_2.close();
 
 		// print_vector(net->inputData, "FLOAT", "inputData:", 784);
 
@@ -341,16 +341,16 @@ void preload_network(bool PRELOADING, string network, string dataset, NeuralNetw
 	{
 		string temp = "Sarda";
 		/************************** Input **********************************/
-		string path_input_1 = default_path+"input_"+to_string(partyNum);
-		string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
-		ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+		// string path_input_1 = default_path+"input_"+to_string(partyNum);
+		// string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
+		// ifstream f_input_1(path_input_1), f_input_2(path_input_2);
 
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
-		{
-			f_input_1 >> temp_next; f_input_2 >> temp_prev;
-			net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_input_1.close(); f_input_2.close();
+		// for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+		// {
+		// 	f_input_1 >> temp_next; f_input_2 >> temp_prev;
+		// 	net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+		// }
+		// f_input_1.close(); f_input_2.close();
 
 		// print_vector(net->inputData, "FLOAT", "inputData:", 784);
 
@@ -443,16 +443,16 @@ void preload_network(bool PRELOADING, string network, string dataset, NeuralNetw
 	{
 		string temp = "MiniONN";
 		/************************** Input **********************************/
-		string path_input_1 = default_path+"input_"+to_string(partyNum);
-		string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
-		ifstream f_input_1(path_input_1), f_input_2(path_input_2);
+		// string path_input_1 = default_path+"input_"+to_string(partyNum);
+		// string path_input_2 = default_path+"input_"+to_string(nextParty(partyNum));
+		// ifstream f_input_1(path_input_1), f_input_2(path_input_2);
 
-		for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
-		{
-			f_input_1 >> temp_next; f_input_2 >> temp_prev;
-			net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-		}
-		f_input_1.close(); f_input_2.close();
+		// for (int i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; ++i)
+		// {
+		// 	f_input_1 >> temp_next; f_input_2 >> temp_prev;
+		// 	net->inputData[i] = std::make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+		// }
+		// f_input_1.close(); f_input_2.close();
 
 		// print_vector(net->inputData, "FLOAT", "inputData:", 784);
 
@@ -568,7 +568,7 @@ void preload_network(bool PRELOADING, string network, string dataset, NeuralNetw
 	{
 		string temp = "LeNet";
 		/************************** Input **********************************/
-		load_input(net, temp, dataset, default_path);
+		// load_input(net, temp, dataset, default_path);
 
 		/************************** Weight1 **********************************/
 		load_weights<CNNLayer>(net, temp, dataset, default_path, 1, 0, 5*5*1*20);
@@ -598,7 +598,7 @@ void preload_network(bool PRELOADING, string network, string dataset, NeuralNetw
 	{
 		string temp = "AlexNet";
 		/************************** Input **********************************/
-		load_input(net, temp, dataset, default_path);
+		// load_input(net, temp, dataset, default_path);
 
 		// Determine any offsets for enabling BNLayers yay or nay
 		#ifndef DISABLE_BN_LAYER
@@ -872,44 +872,80 @@ void readMiniBatch(NeuralNetwork* net, string phase)
 	ifstream& labelsPrev = (phase == "TRAINING" ? trainLabelsPrev : testLabelsPrev);
 	ifstream& labelsNext = (phase == "TRAINING" ? trainLabelsNext : testLabelsNext);
 
-	// Read the next input batch
+	// Read the next input stream
 	net->inputData.resize(INPUT_SIZE * MINI_BATCH_SIZE);
-	float temp_prev, temp_next;
-	for (size_t i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; i++) {
-		// Read the two next values from the files
-		if (!(dataPrev >> temp_prev)) {
-			// Re-try after seeking back to the start
-			dataPrev.seekg(streampos(0));
-			if (!(dataPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " data (prev): " + strerror(errno)); }
-		}
-		if (!(dataNext >> temp_next)) {
-			// Re-try after seeking back to the start
-			dataNext.seekg(streampos(0));
-			if (!(dataNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " data (next): " + strerror(errno)); }
-		}
-
-		// Store them into the inputData
-		net->inputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
-	}
-
-	// Read the next label batch
 	net->outputData.resize(LAST_LAYER_SIZE * MINI_BATCH_SIZE);
-	for (size_t i = 0; i < LAST_LAYER_SIZE * MINI_BATCH_SIZE; i++) {
-		// Read the two next values from the files
-		if (!(labelsPrev >> temp_prev)) {
-			// Re-try after seeking back to the start
-			labelsPrev.seekg(streampos(0));
-			if (!(labelsPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (prev): " + strerror(errno)); }
-		}
-		if (!(labelsNext >> temp_next)) {
-			// Re-try after seeking back to the start
-			labelsNext.seekg(streampos(0));
-			if (!(labelsNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (next): " + strerror(errno)); }
+	float temp_prev, temp_next;
+	for (size_t i = 0; i < MINI_BATCH_SIZE; i++) {
+		// Read the data first and set it as input
+		for (size_t j = 0; j < INPUT_SIZE; j++) {
+			if (!(dataPrev >> temp_prev)) {
+				// Re-try after seeking back to the start
+				dataPrev.seekg(streampos(0));
+				if (!(dataPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " data (prev): " + strerror(errno)); }
+			}
+			if (!(dataNext >> temp_next)) {
+				// Re-try after seeking back to the start
+				dataNext.seekg(streampos(0));
+				if (!(dataNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " data (next): " + strerror(errno)); }
+			}
+			net->inputData.at(i * INPUT_SIZE + j) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
 		}
 
-		// Store them into the inputData
-		net->outputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+		// Then we do the labels
+		for (size_t j = 0; j < LAST_LAYER_SIZE; j++) {
+			if (!(labelsPrev >> temp_prev)) {
+				// Re-try after seeking back to the start
+				labelsPrev.seekg(streampos(0));
+				if (!(labelsPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (prev): " + strerror(errno)); }
+			}
+			if (!(labelsNext >> temp_next)) {
+				// Re-try after seeking back to the start
+				labelsNext.seekg(streampos(0));
+				if (!(labelsNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (next): " + strerror(errno)); }
+			}
+			net->outputData.at(i * LAST_LAYER_SIZE + j) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+		}
 	}
+
+	// // Read the next input batch
+	// net->inputData.resize(INPUT_SIZE * MINI_BATCH_SIZE);
+	// float temp_prev, temp_next;
+	// for (size_t i = 0; i < INPUT_SIZE * MINI_BATCH_SIZE; i++) {
+	// 	// Read the two next values from the files
+	// 	if (!(dataPrev >> temp_prev)) {
+	// 		// Re-try after seeking back to the start
+	// 		dataPrev.seekg(streampos(0));
+	// 		if (!(dataPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " data (prev): " + strerror(errno)); }
+	// 	}
+	// 	if (!(dataNext >> temp_next)) {
+	// 		// Re-try after seeking back to the start
+	// 		dataNext.seekg(streampos(0));
+	// 		if (!(dataNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " data (next): " + strerror(errno)); }
+	// 	}
+
+	// 	// Store them into the inputData
+	// 	net->inputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+	// }
+
+	// // Read the next label batch
+	// net->outputData.resize(LAST_LAYER_SIZE * MINI_BATCH_SIZE);
+	// for (size_t i = 0; i < LAST_LAYER_SIZE * MINI_BATCH_SIZE; i++) {
+	// 	// Read the two next values from the files
+	// 	if (!(labelsPrev >> temp_prev)) {
+	// 		// Re-try after seeking back to the start
+	// 		labelsPrev.seekg(streampos(0));
+	// 		if (!(labelsPrev >> temp_prev)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (prev): " + strerror(errno)); }
+	// 	}
+	// 	if (!(labelsNext >> temp_next)) {
+	// 		// Re-try after seeking back to the start
+	// 		labelsNext.seekg(streampos(0));
+	// 		if (!(labelsNext >> temp_next)) { throw std::runtime_error("Failed to read next float from " + phase + " labels (next): " + strerror(errno)); }
+	// 	}
+
+	// 	// Store them into the inputData
+	// 	net->outputData.at(i) = make_pair(floatToMyType(temp_next), floatToMyType(temp_prev));
+	// }
 }
 
 void printNetwork(NeuralNetwork* net)

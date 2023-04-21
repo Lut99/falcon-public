@@ -64,7 +64,6 @@ NeuralNetwork::~NeuralNetwork()
 void NeuralNetwork::forward()
 {
 	log_print("NN.forward");
-	cout << "layers[0] is " << layers.size() << "and size input layer data is " << inputData.size() << endl;
 	layers[0]->forward(inputData);
 	if (LARGE_NETWORK)
 		cout << "Forward \t" << layers[0]->layerNum << " completed..." << endl;
@@ -244,11 +243,20 @@ void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height
 	RSSVectorMyType old_input  = this->inputData;
 	RSSVectorMyType old_output = this->outputData;
 
-	// Do the number of batches
+	// Allocate all the vectors we'll ever need
 	size_t rows    = MINI_BATCH_SIZE;
 	size_t columns = LAST_LAYER_SIZE;
+	RSSVectorMyType max(rows);
+	RSSVectorSmallType maxPrime(rows*columns);
+	RSSVectorMyType temp_max(rows), temp_groundTruth(rows);
+	RSSVectorSmallType temp_maxPrime(rows*columns);
+	vector<myType> groundTruth(rows*columns);
+	vector<smallType> prediction(rows*columns);
+	// vector<myType> prediction(rows*columns);
 	vector<float> groundTruth_float(n_samples*columns);
 	vector<float> prediction_float(n_samples*columns);
+
+	// Do the number of batches
 	assert(n_samples % MINI_BATCH_SIZE == 0 && "The given number of samples must be a multiple of the MINI_BATCH_SIZE");
 	for (size_t i = 0; i < n_samples / MINI_BATCH_SIZE; i++) {
 		// Get the next test batch
@@ -259,46 +267,32 @@ void NeuralNetwork::collectMetrics(size_t n_samples, size_t width, size_t height
 		this->forward();
 
 		// Reconstruct the prediction of the neural network, using the functions as presented in `NeuralNetwork::getAccuracy()`.
-		RSSVectorMyType max(rows);
-		RSSVectorSmallType maxPrime(rows*columns);
-		RSSVectorMyType temp_max(rows), temp_groundTruth(rows);
-		RSSVectorSmallType temp_maxPrime(rows*columns);
 
-		vector<myType> groundTruth(rows*columns);
-		vector<smallType> prediction(rows*columns);
-		
 		// reconstruct ground truth from output data
-		
+	
 		funcReconstruct(outputData, groundTruth, rows*columns, "groundTruth", false);
-		cout << "GROUND TRUTTTTH ";
-		for (int i = 0; i < groundTruth.size(); i++)
-		{
-			cout << groundTruth[i] << " "; 
-			
-		}
-		cout << endl;
-			
 
 		// reconstruct prediction from neural network
-		funcMaxpool((*(layers[NUM_LAYERS-1])->getActivation()), temp_max, temp_maxPrime, rows, columns);
+		const RSSVectorMyType& activation = (*(layers[NUM_LAYERS-1])->getActivation());
+		funcMaxpool(activation, temp_max, temp_maxPrime, rows, columns);
 		funcReconstructBit(temp_maxPrime, prediction, rows*columns, "prediction", false);
-		cout << "PREDICTIONS ";
+		// funcReconstruct(activation, prediction, rows*columns, "prediction", false);
 
-		for (int i = 0; i < prediction.size(); i++)
-		{
-			cout << prediction[i] << " "; 
-			
+		cout << "prediction (new): [";
+		for (size_t i = 0; i < (prediction.size() < 100 ? prediction.size() : 100); i++) {
+			cout << ' ' << ((float) prediction[i]);
+			// cout << ' ' << ((float) prediction[i]) / (1 << FLOAT_PRECISION);
 		}
-		cout << endl;
+		cout << " ]" << endl;
+
 		// Cast both to floats
 		for (size_t i = 0; i < (rows*columns); i++) {
 			groundTruth_float[i] = ((float) groundTruth[i]) / (1 << FLOAT_PRECISION);
 			prediction_float[i]  = (float) prediction[i];
+			// prediction_float[i]  = ((float) prediction[i]) / (1 << FLOAT_PRECISION);
 		}
 	}
-	cout << "predicted " << endl;
-	for (float i : prediction_float)
-		cout << i << endl; 
+
 	// Now print the metrics over the entire thing
 	printMetrics(groundTruth_float, prediction_float);
 

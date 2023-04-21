@@ -677,7 +677,6 @@ void funcReconstruct3out3(const vector<myType> &a, vector<myType> &b, size_t siz
 // Output is a share between PARTY_A and PARTY_B.
 // a^transpose_a is rows*common_dim and b^transpose_b is common_dim*columns
 // NOTE: truncation is FLOAT_PRECISION
-#define MM_TRACE
 void funcMatMul(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVectorMyType &c, 
 					size_t rows, size_t common_dim, size_t columns,
 				 	size_t transpose_a, size_t transpose_b, size_t truncation)
@@ -1667,7 +1666,7 @@ void funcBatchNorm(const RSSVectorMyType &a, const RSSVectorMyType &b, RSSVector
 
 //Chunk wise maximum of a vector of size rows*columns and maximum is caclulated of every 
 //column number of elements. max is a vector of size rows, maxPrime, of rows*columns*columns; 
-void funcMaxpool(RSSVectorMyType &a, RSSVectorMyType &max, RSSVectorSmallType &maxPrime,
+void funcMaxpool(const RSSVectorMyType &a, RSSVectorMyType &max, RSSVectorSmallType &maxPrime,
 						 size_t rows, size_t columns)
 {
 	log_print("funcMaxpool");
